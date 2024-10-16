@@ -14,7 +14,7 @@ def format_date_for_api(date, start=True):
     else:
         return date.astimezone(est).strftime('%Y-%m-%dT23:59:59+00:00')
 
-# Cache the API data with auto-refresh every 10 seconds
+# Cache API data with a 10-second refresh
 @st.cache_data(ttl=10)
 def fetch_call_data(start_date, end_date, limit=1000):
     url = "https://api.bland.ai/v1/calls"
@@ -49,10 +49,11 @@ def fetch_call_data(start_date, end_date, limit=1000):
             break
 
     return total_count, pd.DataFrame([{
-        "Inbound Number": call["from"],
-        "Call Duration (minutes)": call["call_length"],
-        "Call Cost ($)": call["price"],
-        "Recording URL": f'<a href="{call["recording_url"]}" target="_blank">Listen</a>' if call["recording_url"] else "No Recording"
+        "Inbound Number": call.get("from"),
+        "Call Length (minutes)": call.get("call_length", 0),
+        "Call Cost ($)": call.get("price", 0.0),
+        "Recording URL": f'<a href="{call.get("recording_url")}" target="_blank">Listen</a>' 
+                         if call.get("recording_url") else "No Recording"
     } for call in all_call_data])
 
 # Default to 'Today'
@@ -68,19 +69,28 @@ end_date_str = format_date_for_api(end_date, start=False)
 total_calls, df = fetch_call_data(start_date_str, end_date_str)
 
 st.title("📞 Call Data Analysis")
-st.metric("Total Calls", total_calls)
 
-transferred_calls = df[df["Call Duration (minutes)"] > 1].shape[0]
-converted_calls = df[df["Call Duration (minutes)"] > 30].shape[0]
+# Handle case where no data is available
+if not df.empty:
+    total_cost = df["Call Cost ($)"].sum()
+    transferred_calls = df[df["Call Length (minutes)"] > 1].shape[0]
+    converted_calls = df[df["Call Length (minutes)"] > 30].shape[0]
 
-transferred_percentage = (transferred_calls / total_calls) * 100 if total_calls > 0 else 0
-converted_percentage = (converted_calls / transferred_calls) * 100 if transferred_calls > 0 else 0
+    # Calculate percentages
+    transferred_percentage = (transferred_calls / total_calls) * 100 if total_calls > 0 else 0
+    converted_percentage = (converted_calls / transferred_calls) * 100 if transferred_calls > 0 else 0
 
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Calls", total_calls)
-col2.metric(f"Transferred ({transferred_percentage:.2f}%)", transferred_calls)
-col3.metric(f"Converted ({converted_percentage:.2f}%)", converted_calls)
+    # Display metrics in three columns
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Calls", total_calls)
+    col2.metric(f"Transferred ({transferred_percentage:.2f}%)", transferred_calls)
+    col3.metric(f"Converted ({converted_percentage:.2f}%)", converted_calls)
 
-with st.expander("Call Details"):
-    df_html = df.to_html(escape=False, index=False)
-    st.write(df_html, unsafe_allow_html=True)
+    st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
+
+    # Display table in expander
+    with st.expander("Call Details"):
+        df_html = df.to_html(escape=False, index=False)
+        st.write(df_html, unsafe_allow_html=True)
+else:
+    st.write("No data available for the selected time period.")
