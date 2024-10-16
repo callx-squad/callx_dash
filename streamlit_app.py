@@ -120,11 +120,8 @@ if not df.empty:
 
     st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
 
-    # Allow sorting by Call Duration
-    df = df.sort_values(by="Call Duration (minutes)", ascending=True)
-
-    # Display table in expander with hyperlinks
+    # Display table with sorting enabled
     with st.expander("Call Details"):
-        st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
+        st.dataframe(df, use_container_width=True)
 else:
     st.write("No data available for the selected time period.")
