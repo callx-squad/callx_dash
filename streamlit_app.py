@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import pytz
 import os
 import time
+from streamlit.components.v1 import html
 
 # Get the API key from Streamlit secrets
 API_KEY = st.secrets["API_KEY"]
@@ -116,6 +117,19 @@ option = st.selectbox("Select a time period:", ["Today", "Yesterday", "Last 7 Da
 # Create a placeholder for the main content
 main_content = st.empty()
 
+def style_dataframe(df):
+    def make_clickable(val):
+        if val.startswith('<a href='):
+            return val
+        return f'<div>{val}</div>'
+    
+    styled_df = df.style.format({
+        'Call Cost ($)': '${:.2f}'.format,
+        'Call Duration (minutes)': '{:.2f}'.format
+    }).applymap(make_clickable)
+    
+    return styled_df
+
 if option == "Today":
     start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
     
@@ -129,7 +143,32 @@ if option == "Today":
                 display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct)
 
                 with st.expander("Call Details"):
-                    st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
+                    styled_df = style_dataframe(df)
+                    html_table = styled_df.to_html(escape=False, index=False)
+
+                    sortable_table = f"""
+                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+                    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+
+                    <table id="sortable_table" class="display">
+                        {html_table}
+                    </table>
+
+                    <script>
+                        $(document).ready(function() {{
+                            $('#sortable_table').DataTable({{
+                                "pageLength": 25,
+                                "order": [],
+                                "columnDefs": [
+                                    {{ "orderable": false, "targets": 5 }}  // Disable sorting for the "Recording" column
+                                ]
+                            }});
+                        }});
+                    </script>
+                    """
+
+                    html(sortable_table, height=500)
             else:
                 st.write("No data available for today.")
 
@@ -162,6 +201,31 @@ if option != "Today":
             display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct)
 
             with st.expander("Call Details"):
-                st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
+                styled_df = style_dataframe(df)
+                html_table = styled_df.to_html(escape=False, index=False)
+
+                sortable_table = f"""
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+                <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+
+                <table id="sortable_table" class="display">
+                    {html_table}
+                </table>
+
+                <script>
+                    $(document).ready(function() {{
+                        $('#sortable_table').DataTable({{
+                            "pageLength": 25,
+                            "order": [],
+                            "columnDefs": [
+                                {{ "orderable": false, "targets": 5 }}  // Disable sorting for the "Recording" column
+                            ]
+                        }});
+                    }});
+                </script>
+                """
+
+                html(sortable_table, height=500)
         else:
             st.write("No data available for the selected time period.")
