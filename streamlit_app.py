@@ -133,7 +133,7 @@ def login():
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            height: 80vh;
         }
         .login-box {
             background: #262730;
@@ -147,26 +147,32 @@ def login():
             text-align: center;
             margin-bottom: 20px;
         }
+        .stButton>button {
+            width: 100%;
+        }
         </style>
         """,
         unsafe_allow_html=True
     )
     
-    with st.container():
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
         st.markdown('<div class="login-container">', unsafe_allow_html=True)
-        with st.form(key='login_form'):
-            st.markdown('<h1 class="login-title">Login</h1>', unsafe_allow_html=True)
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            submit_button = st.form_submit_button(label='Login')
-            
-            if submit_button:
-                if username == USERNAME and hash_password(password) == hash_password(PASSWORD):
-                    st.session_state.logged_in = True
-                    st.success("Logged in successfully!")
-                    st.rerun()
-                else:
-                    st.error("Invalid username or password")
+        st.markdown('<div class="login-box">', unsafe_allow_html=True)
+        st.markdown('<h1 class="login-title">Login</h1>', unsafe_allow_html=True)
+        
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        
+        if st.button('Login') or password:  # This allows Enter key to work
+            if username == USERNAME and hash_password(password) == hash_password(PASSWORD):
+                st.session_state.logged_in = True
+                st.success("Logged in successfully!")
+                st.rerun()
+            else:
+                st.error("Invalid username or password")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 def show_dashboard():
@@ -216,15 +222,9 @@ def show_dashboard():
     )
 
     # Add logout button to the top right corner
-    with st.container():
-        st.markdown(
-            '<div class="logout-button">'
-            '<form action="/" method="get">'
-            '<button type="submit">Logout</button>'
-            '</form>'
-            '</div>',
-            unsafe_allow_html=True
-        )
+    if st.button("Logout", key="logout_button"):
+        st.session_state.logged_in = False
+        st.rerun()
 
     col1, col2, col3 = st.columns([1, 3, 1])
     with col2:
@@ -401,10 +401,6 @@ def main():
         login()
     else:
         show_dashboard()
-        # Check if the logout button was clicked
-        if st.button("Logout", key="logout_button"):
-            st.session_state.logged_in = False
-            st.rerun()
 
 # Initialize the app
 if __name__ == '__main__':
