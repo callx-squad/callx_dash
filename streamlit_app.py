@@ -84,8 +84,7 @@ def fetch_call_data(start_date, end_date):
         "Call Duration (minutes)": call.get("call_length", 0),
         "Call Cost ($)": call.get("price", 0.0),
         "Transferred": call.get("transferred_to") is not None,
-        "Recording": f'<a href="{call.get("recording_url")}" target="_blank">Listen</a>'
-                     if call.get("recording_url") else "No Recording"
+        "Recording": call.get("recording_url") if call.get("recording_url") else "No Recording"
     } for call in all_call_data])
 
     return total_count, df, total_cost, transferred_calls, converted_calls
