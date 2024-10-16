@@ -96,17 +96,31 @@ def process_data(total_count, total_cost, transferred_calls, converted_calls):
     return total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit
 
 def display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, show_profit=False):
-    col1, col2, col3 = st.columns(3)
+    # Use custom CSS to adjust layout on mobile
+    st.markdown("""
+    <style>
+    @media (max-width: 768px) {
+        div[data-testid="column"] {
+            width: 50% !important;
+            flex: 1 1 calc(50% - 1rem) !important;
+            min-width: calc(50% - 1rem) !important;
+        }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
     col1.metric("Total Calls", total_count)
     col2.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
+
+    col3, col4 = st.columns(2)
     col3.metric("Converted", "TBC")
-    
-    col4, col5 = st.columns(2)
     col4.metric("Total Call Cost ($)", f"${total_cost:.2f}")
+
     if show_profit:
+        col5, col6 = st.columns(2)
         col5.metric("Call Profit ($)", f"${call_profit:.2f}")
-    else:
-        col5.empty()  # This keeps the layout consistent when profit is not shown
+        col6.empty()  # This keeps the layout balanced
 
 # Display the logo
 st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
