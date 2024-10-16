@@ -288,8 +288,10 @@ def main():
     if 'show_profit' not in st.session_state:
         st.session_state.show_profit = False
 
-    if st.button("🤖", key="toggle_profit"):
-        st.session_state.show_profit = not st.session_state.show_profit
+    # Check if the current user is user1
+    if st.session_state.get("current_user") == "user1":
+        if st.button("🤖", key="toggle_profit"):
+            st.session_state.show_profit = not st.session_state.show_profit
 
     # Define start_date and end_date based on the selected option
     today = datetime.now(est).date()
