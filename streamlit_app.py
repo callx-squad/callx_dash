@@ -92,7 +92,7 @@ def fetch_call_data(start_date, end_date):
 def process_data(total_count, total_cost, transferred_calls, converted_calls):
     transferred_pct = (transferred_calls / total_count) * 100 if total_count else 0
     converted_pct = (converted_calls / transferred_calls) * 100 if transferred_calls else 0
-    call_profit = (total_cost * 4.166666666666667) - total_cost
+    call_profit = total_cost * 0.25
     return total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit
 
 def display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, show_profit=False):
@@ -184,9 +184,20 @@ st.markdown(
     <style>
     .stButton button {
         position: fixed;
-        left: 20px;
-        bottom: 20px;
+        left: 5px;
+        bottom: 5px;
         z-index: 999;
+        background: none;
+        border: none;
+        color: rgba(0,0,0,0.1);
+        font-size: 2px;
+        padding: 0;
+        width: 4px;
+        height: 4px;
+        cursor: default;
+    }
+    .stButton button:hover {
+        color: rgba(0,0,0,0.2);
     }
     </style>
     """,
@@ -196,7 +207,7 @@ st.markdown(
 if 'show_profit' not in st.session_state:
     st.session_state.show_profit = False
 
-if st.button(". Toggle Profit", key="toggle_profit"):
+if st.button("🤖", key="toggle_profit"):
     st.session_state.show_profit = not st.session_state.show_profit
 
 # Update the "Today" section
