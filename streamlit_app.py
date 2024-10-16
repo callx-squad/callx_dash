@@ -143,54 +143,27 @@ def format_dataframe(df):
     return formatted_df
 
 def create_paginated_table(df):
-    table_html = df.to_html(escape=False, index=False, classes=['display', 'nowrap'])
+    records_per_page = 25
+    total_pages = (len(df) - 1) // records_per_page + 1
     
-    paginated_table = f"""
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css" rel="stylesheet">
-    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    page = st.number_input('Page', min_value=1, max_value=total_pages, value=1)
+    start_idx = (page - 1) * records_per_page
+    end_idx = start_idx + records_per_page
     
-    <style>
-        .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {{
-            color: #ffffff;
-        }}
-        .dataTables_wrapper .dataTables_paginate .paginate_button {{
-            color: #ffffff !important;
-        }}
-        table.dataTable thead th, table.dataTable thead td {{
-            color: #ffffff;
-            background-color: #1e2127;
-        }}
-        table.dataTable tbody tr {{
-            background-color: #0e1117;
-            color: #ffffff;
-        }}
-        table.dataTable.stripe tbody tr.odd, table.dataTable.display tbody tr.odd {{
-            background-color: #1e2127;
-        }}
-        table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {{
-            background-color: #2e3137;
-        }}
-        .dataTables_wrapper .dataTables_length select, .dataTables_wrapper .dataTables_filter input {{
-            background-color: #262730;
-            color: #ffffff;
-            border: 1px solid #4a4a4a;
-        }}
-    </style>
-
-    {table_html}
+    st.write(f"Showing records {start_idx + 1} to {min(end_idx, len(df))} of {len(df)}")
     
-    <script>
-        $(document).ready(function() {{
-            $('table.display').DataTable({{
-                pageLength: 25,
-                lengthChange: false,
-                order: []
-            }});
-        }});
-    </script>
-    """
-    return paginated_table
+    st.table(df.iloc[start_idx:end_idx])
+    
+    col1, col2 = st.columns(2)
+    if page > 1:
+        if col1.button('Previous 25'):
+            st.session_state.page = page - 1
+            st.rerun()
+    
+    if page < total_pages:
+        if col2.button('Next 25'):
+            st.session_state.page = page + 1
+            st.rerun()
 
 if option == "Today":
     start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
@@ -206,8 +179,7 @@ if option == "Today":
 
                 with st.expander("Call Details"):
                     formatted_df = format_dataframe(df)
-                    paginated_table = create_paginated_table(formatted_df)
-                    st.components.v1.html(paginated_table, height=600)
+                    create_paginated_table(formatted_df)
             else:
                 st.write("No data available for today.")
 
@@ -241,7 +213,6 @@ if option != "Today":
 
             with st.expander("Call Details"):
                 formatted_df = format_dataframe(df)
-                paginated_table = create_paginated_table(formatted_df)
-                st.components.v1.html(paginated_table, height=600)
+                create_paginated_table(formatted_df)
         else:
             st.write("No data available for the selected time period.")
