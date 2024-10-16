@@ -5,3 +5,4 @@ tabulate
 pytz
 geopy
 python-dotenv
+streamlit-icon-button
