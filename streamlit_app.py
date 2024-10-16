@@ -129,35 +129,25 @@ def display_metrics(total_count, total_cost, transferred_calls, converted_calls,
     </style>
     """, unsafe_allow_html=True)
 
-    metrics_html = f"""
-    <div class="metric-row">
-        <div class="metric-container">
-            <div class="metric-label">Total Calls</div>
-            <div class="metric-value">{total_count}</div>
-        </div>
-        <div class="metric-container">
-            <div class="metric-label">Transferred ({transferred_pct:.2f}%)</div>
-            <div class="metric-value">{transferred_calls}</div>
-        </div>
-        <div class="metric-container">
-            <div class="metric-label">Converted</div>
-            <div class="metric-value">TBC</div>
-        </div>
-        <div class="metric-container">
-            <div class="metric-label">Total Call Cost ($)</div>
-            <div class="metric-value">${total_cost:.2f}</div>
-        </div>
-    """
+    metrics = [
+        {"label": "Total Calls", "value": total_count},
+        {"label": f"Transferred ({transferred_pct:.2f}%)", "value": transferred_calls},
+        {"label": "Converted", "value": "TBC"},
+        {"label": "Total Call Cost ($)", "value": f"${total_cost:.2f}"}
+    ]
 
     if show_profit:
+        metrics.append({"label": "Call Profit ($)", "value": f"${call_profit:.2f}"})
+
+    metrics_html = '<div class="metric-row">'
+    for metric in metrics:
         metrics_html += f"""
         <div class="metric-container">
-            <div class="metric-label">Call Profit ($)</div>
-            <div class="metric-value">${call_profit:.2f}</div>
+            <div class="metric-label">{metric['label']}</div>
+            <div class="metric-value">{metric['value']}</div>
         </div>
         """
-
-    metrics_html += "</div>"
+    metrics_html += '</div>'
 
     st.markdown(metrics_html, unsafe_allow_html=True)
 
