@@ -136,10 +136,16 @@ def style_dataframe(df):
     return styled_df
 
 def format_dataframe(df):
+    def format_recording(val):
+        if pd.isna(val) or val == "No Recording":
+            return "No Recording"
+        return f'<a href="{val}" target="_blank">Listen</a>'
+
     formatted_df = df.copy()
     formatted_df['Call Cost ($)'] = formatted_df['Call Cost ($)'].apply(lambda x: f'${x:.2f}')
     formatted_df['Call Duration (minutes)'] = formatted_df['Call Duration (minutes)'].apply(lambda x: f'{x:.2f}')
     formatted_df['Transferred'] = formatted_df['Transferred'].apply(lambda x: 'Yes' if x else 'No')
+    formatted_df['Recording'] = formatted_df['Recording'].apply(format_recording)
     return formatted_df
 
 if option == "Today":
@@ -156,7 +162,7 @@ if option == "Today":
 
                 with st.expander("Call Details"):
                     formatted_df = format_dataframe(df)
-                    st.dataframe(formatted_df, use_container_width=True)
+                    st.markdown(formatted_df.to_html(escape=False, index=False), unsafe_allow_html=True)
             else:
                 st.write("No data available for today.")
 
@@ -190,6 +196,6 @@ if option != "Today":
 
             with st.expander("Call Details"):
                 formatted_df = format_dataframe(df)
-                st.dataframe(formatted_df, use_container_width=True)
+                st.markdown(formatted_df.to_html(escape=False, index=False), unsafe_allow_html=True)
         else:
             st.write("No data available for the selected time period.")
