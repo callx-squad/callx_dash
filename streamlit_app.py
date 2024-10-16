@@ -120,6 +120,9 @@ if not df.empty:
 
     st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
 
+    # Modify the DataFrame for display with HTML hyperlinks
+    df["Recording"] = df["Recording"].apply(lambda x: st.markdown(x, unsafe_allow_html=True))
+
     # Display table with sorting enabled
     with st.expander("Call Details"):
         st.dataframe(df, use_container_width=True)
