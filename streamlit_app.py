@@ -6,6 +6,7 @@ import pytz
 import os
 import time
 from streamlit.components.v1 import html
+from streamlit_icon_button import icon_button
 
 # Get the API key from Streamlit secrets
 API_KEY = st.secrets["API_KEY"]
@@ -92,14 +93,17 @@ def fetch_call_data(start_date, end_date):
 def process_data(total_count, total_cost, transferred_calls, converted_calls):
     transferred_pct = (transferred_calls / total_count) * 100 if total_count else 0
     converted_pct = (converted_calls / transferred_calls) * 100 if transferred_calls else 0
-    return total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct
+    call_profit = total_cost * 4.166666666666667
+    return total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit
 
-def display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct):
+def display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, show_profit=False):
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Calls", total_count)
     col2.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
     col3.metric("Converted", "TBC")
     st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
+    if show_profit:
+        st.metric("Call Profit ($)", f"${call_profit:.2f}")
 
 # Display the logo
 st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
@@ -171,6 +175,28 @@ def create_paginated_table(df):
             st.session_state.page += 1
             st.rerun()
 
+# Add this at the end of your script, after all other content
+st.markdown(
+    """
+    <style>
+    .stIcon {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 999;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+if 'show_profit' not in st.session_state:
+    st.session_state.show_profit = False
+
+if icon_button("🤖", "Toggle Profit", key="toggle_profit"):
+    st.session_state.show_profit = not st.session_state.show_profit
+
+# Update the "Today" section
 if option == "Today":
     start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
     
@@ -180,8 +206,8 @@ if option == "Today":
             total_count, df, total_cost, transferred_calls, converted_calls = fetch_call_data(start_date_str, end_date_str)
 
             if not df.empty:
-                total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct = process_data(total_count, total_cost, transferred_calls, converted_calls)
-                display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct)
+                total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit = process_data(total_count, total_cost, transferred_calls, converted_calls)
+                display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, st.session_state.show_profit)
 
                 with st.expander("Call Details"):
                     formatted_df = format_dataframe(df)
@@ -192,30 +218,15 @@ if option == "Today":
         time.sleep(10)
         st.rerun()
 
-elif option == "Yesterday":
-    start_date, end_date = datetime.combine(yesterday, datetime.min.time(), tzinfo=est), datetime.combine(yesterday, datetime.max.time(), tzinfo=est)
-elif option == "Last 7 Days":
-    start_date, end_date = datetime.combine(last_7_days, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
-elif option == "Last 30 Days":
-    start_date, end_date = datetime.combine(last_30_days, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
-else:
-    start_date = st.date_input("Start date", last_30_days)
-    end_date = st.date_input("End date", today)
-    if start_date > end_date:
-        st.error("Start date must be before or equal to end date.")
-
-# Store the current selection in session state
-st.session_state['date_selection'] = option
-
-# For options other than "Today"
+# Update the section for other options
 if option != "Today":
     with main_content.container():
         start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
         total_count, df, total_cost, transferred_calls, converted_calls = fetch_call_data(start_date_str, end_date_str)
 
         if not df.empty:
-            total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct = process_data(total_count, total_cost, transferred_calls, converted_calls)
-            display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct)
+            total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit = process_data(total_count, total_cost, transferred_calls, converted_calls)
+            display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, st.session_state.show_profit)
 
             with st.expander("Call Details"):
                 formatted_df = format_dataframe(df)
