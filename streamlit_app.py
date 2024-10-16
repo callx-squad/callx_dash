@@ -182,6 +182,10 @@ if option == "Today":
                         .dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {{
                             color: #333 !important;
                         }}
+                        table.dataTable thead th, table.dataTable thead td {{
+                            color: #ffffff;
+                            background-color: #1e2127;
+                        }}
                         table.dataTable tbody tr {{
                             background-color: #0e1117;
                             color: #ffffff;
@@ -199,6 +203,12 @@ if option == "Today":
                             background-color: #262730;
                             color: #ffffff;
                             border: 1px solid #4a4a4a;
+                        }}
+                        table.dataTable tbody td {{
+                            color: #ffffff;
+                        }}
+                        table.dataTable tbody td a {{
+                            color: #4da6ff;
                         }}
                     </style>
 
@@ -273,6 +283,10 @@ if option != "Today":
                     .dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {{
                         color: #333 !important;
                     }}
+                    table.dataTable thead th, table.dataTable thead td {{
+                        color: #ffffff;
+                        background-color: #1e2127;
+                    }}
                     table.dataTable tbody tr {{
                         background-color: #0e1117;
                         color: #ffffff;
@@ -290,6 +304,12 @@ if option != "Today":
                         background-color: #262730;
                         color: #ffffff;
                         border: 1px solid #4a4a4a;
+                    }}
+                    table.dataTable tbody td {{
+                        color: #ffffff;
+                    }}
+                    table.dataTable tbody td a {{
+                        color: #4da6ff;
                     }}
                 </style>
 
