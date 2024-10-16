@@ -8,10 +8,17 @@ import time
 from streamlit.components.v1 import html
 import hashlib
 
-# Get the API key and login credentials from Streamlit secrets
-API_KEY = st.secrets["API_KEY"]
-USERNAME = st.secrets["USERNAME"]
-PASSWORD = st.secrets["PASSWORD"]
+# Define multiple sets of credentials
+CREDENTIALS = {
+    "user1": {
+        "username": st.secrets["USERNAME1"],
+        "password": st.secrets["PASSWORD1"]
+    },
+    "user2": {
+        "username": st.secrets["USERNAME2"],
+        "password": st.secrets["PASSWORD2"]
+    }
+}
 
 # Function to hash passwords
 def hash_password(password):
@@ -23,11 +30,14 @@ def check_password():
 
     def password_entered():
         """Checks whether a password entered by the user is correct."""
-        if hash_password(st.session_state["password"]) == hash_password(PASSWORD) and st.session_state["username"] == USERNAME:
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # Don't store password
-        else:
-            st.session_state["password_correct"] = False
+        for user, cred in CREDENTIALS.items():
+            if (st.session_state["username"] == cred["username"] and 
+                hash_password(st.session_state["password"]) == hash_password(cred["password"])):
+                st.session_state["password_correct"] = True
+                st.session_state["current_user"] = user
+                del st.session_state["password"]  # Don't store password
+                return
+        st.session_state["password_correct"] = False
 
     # Center the logo and create some space
     if "password_correct" not in st.session_state or not st.session_state["password_correct"]:
