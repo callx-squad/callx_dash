@@ -8,12 +8,12 @@ image_url = "https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57
 st.image(image_url, width=200)
 
 # Helper function to fetch data from the API with pagination
-def fetch_call_data_paginated(start_date, end_date, limit=100000):
+def fetch_call_data_paginated(start_date, end_date, limit=1000):
     url = "https://api.bland.ai/v1/calls"
     headers = {"authorization": "sk-s3zix6yia4ew2w9ymga9v0jexcx0j0crqu0kuvzwqqhg3hj7z9tteiuv6i3rls5u69"}
     
     all_call_data = []
-    next_from = None  # Use this to paginate through results
+    cursor = None  # Replace with cursor or token if API supports cursor-based pagination
 
     while True:
         querystring = {
@@ -22,9 +22,9 @@ def fetch_call_data_paginated(start_date, end_date, limit=100000):
             "limit": str(limit),
         }
         
-        # Add the "next_from" parameter for pagination if it exists
-        if next_from:
-            querystring["next_from"] = next_from
+        # Add the "cursor" parameter for pagination if it exists
+        if cursor:
+            querystring["cursor"] = cursor
         
         response = requests.get(url, headers=headers, params=querystring)
         
@@ -33,13 +33,9 @@ def fetch_call_data_paginated(start_date, end_date, limit=100000):
             calls = data['calls']
             all_call_data.extend(calls)  # Append calls to the list
 
-            # Debugging: Check how many calls you get per batch and if a 'next_from' token is present
-            st.write(f"Fetched {len(calls)} calls in this batch.")
-            st.write(data.get('next_from'))  # Display the pagination token
-
-            # If there's a "next_from" value in the response, continue pagination
-            if 'next_from' in data and data['next_from']:
-                next_from = data['next_from']
+            # If there's a "cursor" value in the response, continue pagination
+            if 'cursor' in data and data['cursor']:
+                cursor = data['cursor']
             else:
                 break
         else:
