@@ -107,8 +107,9 @@ if not df.empty:
     
     st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
     
-    # Display the updated DataFrame with hyperlinks
-    df_html = df.to_html(escape=False, index=False)
-    st.write(df_html, unsafe_allow_html=True)
+    # Display the table in an expander (dropdown)
+    with st.expander("Call Details"):
+        df_html = df.to_html(escape=False, index=False)
+        st.write(df_html, unsafe_allow_html=True)
 else:
     st.write("No data available for the selected time period.")
