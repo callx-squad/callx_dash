@@ -58,9 +58,6 @@ def main():
     if not check_password():
         st.stop()  # Do not continue if check_password is not True.
     
-    # Remove or comment out this line to avoid displaying the logo again
-    # st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
-    
     # Your existing dashboard code starts here
     if not API_KEY:
         st.error("API_KEY is not set. Please set it in your Streamlit secrets.")
