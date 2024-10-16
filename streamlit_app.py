@@ -174,25 +174,26 @@ def login():
 
 # Main app logic
 def main():
-    st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
+    # Add sidebar
+    st.sidebar.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
     
-    # Sidebar for login
+    # Login in sidebar
     with st.sidebar:
         st.subheader("Login")
         username = st.text_input("Username")
         password = st.text_input("Password", type='password')
         login_button = st.button("Login")
 
-        if login_button:
-            if username == USERNAME and check_hashes(password, make_hashes(PASSWORD)):
-                st.session_state.logged_in = True
-                st.success("Logged In as {}".format(username))
-                st.rerun()
-            else:
-                st.error("Incorrect Username/Password")
-
     if 'logged_in' not in st.session_state:
         st.session_state.logged_in = False
+
+    if login_button:
+        if username == USERNAME and check_hashes(password, make_hashes(PASSWORD)):
+            st.session_state.logged_in = True
+            st.sidebar.success("Logged In as {}".format(username))
+            st.rerun()
+        else:
+            st.sidebar.error("Incorrect Username/Password")
 
     if not st.session_state.logged_in:
         st.title("Call Data Dashboard")
