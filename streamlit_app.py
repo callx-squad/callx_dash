@@ -21,27 +21,35 @@ def format_date_for_api(date, start=True):
     return date.astimezone(est).strftime('%Y-%m-%dT00:00:01+00:00' if start else '%Y-%m-%dT23:59:59+00:00')
 
 @st.cache_data(ttl=10)
-def fetch_call_data(start_date, end_date, limit=1000):
+def fetch_call_data(start_date, end_date):
     url = "https://api.bland.ai/v1/calls"
     headers = {"authorization": API_KEY}
 
     all_call_data = []
-    next_from = None
     total_count = 0
+    from_index = 0
+    to_index = 999  # Start with the first 1000 records
 
     while True:
-        querystring = {"start_date": start_date, "end_date": end_date, "limit": str(limit)}
-        if next_from:
-            querystring["next_from"] = next_from
+        querystring = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "from": str(from_index),
+            "to": str(to_index)
+        }
 
         response = requests.get(url, headers=headers, params=querystring)
         if response.status_code == 200:
             data = response.json()
-            total_count = data.get('total_count', 0)  # Get the total_count from the API response
-            all_call_data.extend(data.get('calls', []))
-            next_from = data.get('next_from')
-            if not next_from:
+            total_count = data.get('total_count', 0)
+            calls = data.get('calls', [])
+            all_call_data.extend(calls)
+            
+            if len(calls) < 1000:  # Less than 1000 records returned, we've reached the end
                 break
+            
+            from_index = to_index + 1
+            to_index = min(from_index + 999, total_count - 1)  # Ensure we don't exceed total_count
         else:
             st.error(f"Failed to fetch data. Status: {response.status_code}")
             break
@@ -56,7 +64,7 @@ def fetch_call_data(start_date, end_date, limit=1000):
                      if call.get("recording_url") else "No Recording"
     } for call in all_call_data])
 
-    return total_count, df  # Return the total_count from the API
+    return total_count, df
 
 # Display the logo
 st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
