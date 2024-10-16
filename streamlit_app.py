@@ -50,6 +50,7 @@ def fetch_call_data(start_date, end_date, limit=1000):
 
     return total_count, pd.DataFrame([{
         "Inbound Number": call.get("from"),
+        "Call Date": call.get("created_at", "").split("T")[0],  # Extract date from timestamp
         "Call Duration (minutes)": call.get("call_length", 0),
         "Call Cost ($)": call.get("price", 0.0),
         "Recording": f'<a href="{call.get("recording_url")}" target="_blank">Listen</a>'
