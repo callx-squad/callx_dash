@@ -7,14 +7,14 @@ import pytz
 # Define EST timezone
 est = pytz.timezone('US/Eastern')
 
-# Function to format dates for the API
+# Function to format dates for API
 def format_date_for_api(date, start=True):
     if start:
         return date.astimezone(est).strftime('%Y-%m-%dT00:00:01+00:00')
     else:
         return date.astimezone(est).strftime('%Y-%m-%dT23:59:59+00:00')
 
-# Cache API data with a 10-second refresh
+# Cache the API data with a 10-second refresh
 @st.cache_data(ttl=10)
 def fetch_call_data(start_date, end_date, limit=1000):
     url = "https://api.bland.ai/v1/calls"
@@ -32,7 +32,7 @@ def fetch_call_data(start_date, end_date, limit=1000):
         }
         if next_from:
             querystring["next_from"] = next_from
-        
+
         response = requests.get(url, headers=headers, params=querystring)
         if response.status_code == 200:
             data = response.json()
@@ -52,35 +52,59 @@ def fetch_call_data(start_date, end_date, limit=1000):
         "Inbound Number": call.get("from"),
         "Call Length (minutes)": call.get("call_length", 0),
         "Call Cost ($)": call.get("price", 0.0),
-        "Recording URL": f'<a href="{call.get("recording_url")}" target="_blank">Listen</a>' 
+        "Recording URL": f'<a href="{call.get("recording_url")}" target="_blank">Listen</a>'
                          if call.get("recording_url") else "No Recording"
     } for call in all_call_data])
 
-# Default to 'Today'
+# Define time periods and dropdown UI
 today = datetime.now(est).date()
-start_date = datetime.combine(today, datetime.min.time(), tzinfo=est)
-end_date = datetime.combine(today, datetime.max.time(), tzinfo=est)
-
-# Format dates for API
-start_date_str = format_date_for_api(start_date, start=True)
-end_date_str = format_date_for_api(end_date, start=False)
-
-# Fetch data and display metrics
-total_calls, df = fetch_call_data(start_date_str, end_date_str)
+yesterday = today - timedelta(days=1)
+last_7_days = today - timedelta(days=7)
+last_30_days = today - timedelta(days=30)
 
 st.title("📞 Call Data Analysis")
 
-# Handle case where no data is available
-if not df.empty:
+option = st.selectbox(
+    "Select a time period:",
+    ["Today", "Yesterday", "Last 7 Days", "Last 30 Days", "Custom Date Range"]
+)
+
+# Determine the start and end dates based on user selection
+if option == "Today":
+    start_date = datetime.combine(today, datetime.min.time(), tzinfo=est)
+    end_date = datetime.combine(today, datetime.max.time(), tzinfo=est)
+elif option == "Yesterday":
+    start_date = datetime.combine(yesterday, datetime.min.time(), tzinfo=est)
+    end_date = datetime.combine(yesterday, datetime.max.time(), tzinfo=est)
+elif option == "Last 7 Days":
+    start_date = datetime.combine(last_7_days, datetime.min.time(), tzinfo=est)
+    end_date = datetime.combine(today, datetime.max.time(), tzinfo=est)
+elif option == "Last 30 Days":
+    start_date = datetime.combine(last_30_days, datetime.min.time(), tzinfo=est)
+    end_date = datetime.combine(today, datetime.max.time(), tzinfo=est)
+else:
+    start_date = st.date_input("Start date", last_30_days)
+    end_date = st.date_input("End date", today)
+    if start_date > end_date:
+        st.error("Start date must be before or equal to end date.")
+
+# Format dates for the API
+start_date_str = format_date_for_api(start_date, start=True)
+end_date_str = format_date_for_api(end_date, start=False)
+
+# Fetch data
+total_calls, df = fetch_call_data(start_date_str, end_date_str)
+
+# Display metrics and table (if data is available)
+if total_calls > 0:
     total_cost = df["Call Cost ($)"].sum()
     transferred_calls = df[df["Call Length (minutes)"] > 1].shape[0]
     converted_calls = df[df["Call Length (minutes)"] > 30].shape[0]
 
-    # Calculate percentages
     transferred_percentage = (transferred_calls / total_calls) * 100 if total_calls > 0 else 0
     converted_percentage = (converted_calls / transferred_calls) * 100 if transferred_calls > 0 else 0
 
-    # Display metrics in three columns
+    # Display metrics in columns
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Calls", total_calls)
     col2.metric(f"Transferred ({transferred_percentage:.2f}%)", transferred_calls)
