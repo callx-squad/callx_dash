@@ -64,11 +64,6 @@ def check_password():
         # Password correct.
         return True
 
-# Add this function to format dates for API
-def format_date_for_api(date, start=True):
-    """Format dates to API-friendly format."""
-    return date.astimezone(pytz.timezone('US/Eastern')).strftime('%Y-%m-%dT%H:%M:%S%z')
-
 # Main function to display dashboard
 def main():
     if not check_password():
