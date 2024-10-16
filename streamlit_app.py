@@ -3,20 +3,19 @@ import pandas as pd
 import requests
 from datetime import datetime, timedelta
 import pytz
-import time
 
 # Define EST timezone
 est = pytz.timezone('US/Eastern')
 
-# Function to format dates for API
+# Function to format dates for the API
 def format_date_for_api(date, start=True):
     if start:
         return date.astimezone(est).strftime('%Y-%m-%dT00:00:01+00:00')
     else:
         return date.astimezone(est).strftime('%Y-%m-%dT23:59:59+00:00')
 
-# Fetch call data from the API
-@st.experimental_memo(ttl=10)  # Cache results and refresh every 10 seconds
+# Cache the API data with auto-refresh every 10 seconds
+@st.cache_data(ttl=10)
 def fetch_call_data(start_date, end_date, limit=1000):
     url = "https://api.bland.ai/v1/calls"
     headers = {"authorization": "sk-s3zix6yia4ew2w9ymga9v0jexcx0j0crqu0kuvzwqqhg3hj7z9tteiuv6i3rls5u69"}
