@@ -98,7 +98,7 @@ def display_metrics(total_count, total_cost, transferred_calls, converted_calls,
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Calls", total_count)
     col2.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
-    col3.metric(f"Converted ({converted_pct:.2f}%)", converted_calls)
+    col3.metric("Converted", "TBC")
     st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
 
 # Display the logo
