@@ -96,60 +96,25 @@ def process_data(total_count, total_cost, transferred_calls, converted_calls):
     return total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit
 
 def display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, show_profit=False):
-    # Use custom CSS to adjust layout and font sizes on mobile
-    st.markdown("""
-    <style>
-    .metric-row {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-    }
-    .metric-container {
-        flex: 0 0 calc(50% - 10px);
-        margin-bottom: 20px;
-    }
-    .metric-label {
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-    .metric-value {
-        font-size: 24px;
-    }
-    @media (max-width: 768px) {
-        .metric-container {
-            flex: 0 0 calc(50% - 5px);
-        }
-        .metric-label {
-            font-size: 12px;
-        }
-        .metric-value {
-            font-size: 16px;
-        }
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    metrics = [
-        {"label": "Total Calls", "value": total_count},
-        {"label": f"Transferred ({transferred_pct:.2f}%)", "value": transferred_calls},
-        {"label": "Converted", "value": "TBC"},
-        {"label": "Total Call Cost ($)", "value": f"${total_cost:.2f}"}
-    ]
-
+    # Create two rows of metrics
+    row1 = st.columns(2)
+    row2 = st.columns(2)
+    
+    # First row
+    with row1[0]:
+        st.metric("Total Calls", total_count)
+    with row1[1]:
+        st.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
+    
+    # Second row
+    with row2[0]:
+        st.metric("Converted", "TBC")
+    with row2[1]:
+        st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
+    
+    # Show profit if enabled
     if show_profit:
-        metrics.append({"label": "Call Profit ($)", "value": f"${call_profit:.2f}"})
-
-    metrics_html = '<div class="metric-row">'
-    for metric in metrics:
-        metrics_html += f"""
-        <div class="metric-container">
-            <div class="metric-label">{metric['label']}</div>
-            <div class="metric-value">{metric['value']}</div>
-        </div>
-        """
-    metrics_html += '</div>'
-
-    st.markdown(metrics_html, unsafe_allow_html=True)
+        st.metric("Call Profit ($)", f"${call_profit:.2f}")
 
 # Display the logo
 st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
