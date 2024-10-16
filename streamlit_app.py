@@ -96,9 +96,10 @@ def process_data(total_count, total_cost, transferred_calls, converted_calls):
     return total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit
 
 def display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, show_profit=False):
-    # Create two rows of metrics
+    # Create three rows of metrics
     row1 = st.columns(2)
     row2 = st.columns(2)
+    row3 = st.columns(2)
     
     # First row
     with row1[0]:
@@ -112,9 +113,39 @@ def display_metrics(total_count, total_cost, transferred_calls, converted_calls,
     with row2[1]:
         st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
     
-    # Show profit if enabled
+    # Third row (for profit)
     if show_profit:
-        st.metric("Call Profit ($)", f"${call_profit:.2f}")
+        with row3[0]:
+            st.metric("Call Profit ($)", f"${call_profit:.2f}")
+    else:
+        # Add an empty metric to maintain layout
+        with row3[0]:
+            st.empty()
+    
+    # Always add an empty metric in the second column of the third row
+    # This ensures consistent layout whether profit is shown or not
+    with row3[1]:
+        st.empty()
+
+# Add custom CSS to ensure two-column layout on mobile
+st.markdown("""
+<style>
+@media (max-width: 640px) {
+    .stMetric {
+        width: 50% !important;
+        flex: 1 1 calc(50% - 1rem) !important;
+        padding-right: 0.5rem !important;
+        padding-left: 0.5rem !important;
+    }
+    .stMetric-value {
+        font-size: 1.25rem !important;
+    }
+    .stMetric-label {
+        font-size: 0.875rem !important;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Display the logo
 st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
