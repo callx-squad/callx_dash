@@ -52,9 +52,13 @@ def fetch_call_data(start_date, end_date, limit=1000):
         "Inbound Number": call.get("from"),
         "Call Duration (minutes)": call.get("call_length", 0),
         "Call Cost ($)": call.get("price", 0.0),
-        "Recording URL": f'<a href="{call.get("recording_url")}" target="_blank">Listen</a>' 
-                         if call.get("recording_url") else "No Recording"
+        "Recording": f'<a href="{call.get("recording_url")}" target="_blank">Listen</a>'
+                     if call.get("recording_url") else "No Recording"
     } for call in all_call_data])
+
+# Display the logo
+image_url = "https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png"
+st.image(image_url, width=200)
 
 # Time periods
 today = datetime.now(est).date()
@@ -118,8 +122,8 @@ if not df.empty:
     # Allow sorting by Call Duration
     df = df.sort_values(by="Call Duration (minutes)", ascending=True)
 
-    # Display table in expander with sorting functionality
+    # Display table in expander with hyperlinks
     with st.expander("Call Details"):
-        st.dataframe(df, use_container_width=True)
+        st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
 else:
     st.write("No data available for the selected time period.")
