@@ -163,14 +163,46 @@ if option == "Today":
 
                 with st.expander("Call Details"):
                     formatted_df = format_dataframe(df)
-                    html_table = formatted_df.to_html(escape=False, index=False)
+                    html_table = formatted_df.to_html(escape=False, index=False, classes=['display', 'nowrap'])
 
                     sortable_table = f"""
                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
                     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+                    <style>
+                        .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {{
+                            color: #ffffff;
+                        }}
+                        .dataTables_wrapper .dataTables_paginate .paginate_button {{
+                            color: #ffffff !important;
+                        }}
+                        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {{
+                            color: #666 !important;
+                        }}
+                        .dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {{
+                            color: #333 !important;
+                        }}
+                        table.dataTable tbody tr {{
+                            background-color: #0e1117;
+                            color: #ffffff;
+                        }}
+                        table.dataTable.display tbody tr.odd {{
+                            background-color: #1e2127;
+                        }}
+                        table.dataTable.display tbody tr.even {{
+                            background-color: #0e1117;
+                        }}
+                        table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {{
+                            background-color: #2e3137;
+                        }}
+                        .dataTables_wrapper .dataTables_length select, .dataTables_wrapper .dataTables_filter input {{
+                            background-color: #262730;
+                            color: #ffffff;
+                            border: 1px solid #4a4a4a;
+                        }}
+                    </style>
 
-                    <table id="sortable_table" class="display">
+                    <table id="sortable_table" class="display nowrap">
                         {html_table}
                     </table>
 
@@ -181,13 +213,14 @@ if option == "Today":
                                 "order": [],
                                 "columnDefs": [
                                     {{ "orderable": false, "targets": 5 }}  // Disable sorting for the "Recording" column
-                                ]
+                                ],
+                                "scrollX": true
                             }});
                         }});
                     </script>
                     """
 
-                    html(sortable_table, height=500)
+                    html(sortable_table, height=600)
             else:
                 st.write("No data available for today.")
 
@@ -221,14 +254,46 @@ if option != "Today":
 
             with st.expander("Call Details"):
                 formatted_df = format_dataframe(df)
-                html_table = formatted_df.to_html(escape=False, index=False)
+                html_table = formatted_df.to_html(escape=False, index=False, classes=['display', 'nowrap'])
 
                 sortable_table = f"""
                 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                 <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
                 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+                <style>
+                    .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {{
+                        color: #ffffff;
+                    }}
+                    .dataTables_wrapper .dataTables_paginate .paginate_button {{
+                        color: #ffffff !important;
+                    }}
+                    .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {{
+                        color: #666 !important;
+                    }}
+                    .dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {{
+                        color: #333 !important;
+                    }}
+                    table.dataTable tbody tr {{
+                        background-color: #0e1117;
+                        color: #ffffff;
+                    }}
+                    table.dataTable.display tbody tr.odd {{
+                        background-color: #1e2127;
+                    }}
+                    table.dataTable.display tbody tr.even {{
+                        background-color: #0e1117;
+                    }}
+                    table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {{
+                        background-color: #2e3137;
+                    }}
+                    .dataTables_wrapper .dataTables_length select, .dataTables_wrapper .dataTables_filter input {{
+                        background-color: #262730;
+                        color: #ffffff;
+                        border: 1px solid #4a4a4a;
+                    }}
+                </style>
 
-                <table id="sortable_table" class="display">
+                <table id="sortable_table" class="display nowrap">
                     {html_table}
                 </table>
 
@@ -239,12 +304,13 @@ if option != "Today":
                             "order": [],
                             "columnDefs": [
                                 {{ "orderable": false, "targets": 5 }}  // Disable sorting for the "Recording" column
-                            ]
+                            ],
+                            "scrollX": true
                         }});
                     }});
                 </script>
                 """
 
-                html(sortable_table, height=500)
+                html(sortable_table, height=600)
         else:
             st.write("No data available for the selected time period.")
