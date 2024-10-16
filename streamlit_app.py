@@ -9,7 +9,7 @@ def fetch_call_data_paginated(start_date, end_date, limit=1000):
     headers = {"authorization": "sk-s3zix6yia4ew2w9ymga9v0jexcx0j0crqu0kuvzwqqhg3hj7z9tteiuv6i3rls5u69"}
     
     all_call_data = []
-    next_from = None  # Pagination variable (check if your API uses this or next_token)
+    next_from = None  # Use this to paginate through results
 
     while True:
         querystring = {
@@ -18,9 +18,9 @@ def fetch_call_data_paginated(start_date, end_date, limit=1000):
             "limit": str(limit),
         }
         
-        # Add the "from" parameter for pagination if it exists
+        # Add the "next_from" parameter for pagination if it exists
         if next_from:
-            querystring["from"] = next_from
+            querystring["next_from"] = next_from
         
         response = requests.get(url, headers=headers, params=querystring)
         
@@ -29,10 +29,11 @@ def fetch_call_data_paginated(start_date, end_date, limit=1000):
             calls = data['calls']
             all_call_data.extend(calls)  # Append calls to the list
 
-            # Use pagination to get the next batch
-            if len(calls) < limit:
+            # If there's a "next_from" value in the response, continue pagination
+            if 'next_from' in data and data['next_from']:
+                next_from = data['next_from']
+            else:
                 break
-            next_from = calls[-1]["c_id"]  # Check if the API provides an actual "next_token" for pagination
         else:
             st.error(f"Failed to fetch data from the API. Status code: {response.status_code}")
             break
@@ -62,7 +63,6 @@ option = st.selectbox(
     ["Today", "Yesterday", "Last 7 Days", "Last 30 Days", "Custom Date Range"]
 )
 
-# Set the date range based on user selection
 if option == "Today":
     start_date = today
     end_date = today
