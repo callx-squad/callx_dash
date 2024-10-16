@@ -66,6 +66,22 @@ def fetch_call_data(start_date, end_date):
 
     return total_count, df
 
+def process_data(df, total_count):
+    total_cost = df["Call Cost ($)"].sum()
+    transferred_calls = df[df["Transferred"]].shape[0]
+    converted_calls = df[df["Call Duration (minutes)"] > 30].shape[0]
+    transferred_pct = (transferred_calls / total_count) * 100 if total_count else 0
+    converted_pct = (converted_calls / transferred_calls) * 100 if transferred_calls else 0
+
+    return total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct
+
+def display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct):
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Calls", total_count)
+    col2.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
+    col3.metric(f"Converted ({converted_pct:.2f}%)", converted_calls)
+    st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
+
 # Display the logo
 st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
 
@@ -128,19 +144,3 @@ if option != "Today":
             st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
     else:
         st.write("No data available for the selected time period.")
-
-def process_data(df, total_count):
-    total_cost = df["Call Cost ($)"].sum()
-    transferred_calls = df[df["Transferred"]].shape[0]
-    converted_calls = df[df["Call Duration (minutes)"] > 30].shape[0]
-    transferred_pct = (transferred_calls / total_count) * 100 if total_count else 0
-    converted_pct = (converted_calls / transferred_calls) * 100 if transferred_calls else 0
-
-    return total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct
-
-def display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct):
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Calls", total_count)
-    col2.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
-    col3.metric(f"Converted ({converted_pct:.2f}%)", converted_calls)
-    st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
