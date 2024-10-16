@@ -48,11 +48,23 @@ def fetch_call_data(start_date, end_date):
             calls = data.get('calls', [])
             
             for call in calls:
-                total_cost += call.get("price", 0.0)
+                price = call.get("price")
+                if price is not None:
+                    try:
+                        total_cost += float(price)
+                    except (ValueError, TypeError):
+                        st.warning(f"Invalid price value: {price}")
+                
                 if call.get("transferred_to") is not None:
                     transferred_calls += 1
-                if call.get("call_length", 0) > 30:
-                    converted_calls += 1
+                
+                call_length = call.get("call_length")
+                if call_length is not None:
+                    try:
+                        if float(call_length) > 30:
+                            converted_calls += 1
+                    except (ValueError, TypeError):
+                        st.warning(f"Invalid call length value: {call_length}")
             
             all_call_data.extend(calls)
             
