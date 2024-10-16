@@ -53,6 +53,7 @@ def fetch_call_data(start_date, end_date, limit=1000):
         "Call Date": call.get("created_at", "").split("T")[0],
         "Call Duration (minutes)": call.get("call_length", 0),
         "Call Cost ($)": call.get("price", 0.0),
+        "Transferred": call.get("transferred_to") is not None,  # True if transferred_to is not null
         "Recording": f'<a href="{call.get("recording_url")}" target="_blank">Listen</a>'
                      if call.get("recording_url") else "No Recording"
     } for call in all_call_data])
@@ -105,7 +106,7 @@ total_calls, df = fetch_call_data(start_date_str, end_date_str)
 # Display metrics and table
 if not df.empty:
     total_cost = df["Call Cost ($)"].sum()
-    transferred_calls = df[df["Call Duration (minutes)"] > 1].shape[0]
+    transferred_calls = df[df["Transferred"]].shape[0]  # Count where Transferred is True
     converted_calls = df[df["Call Duration (minutes)"] > 30].shape[0]
 
     # Calculate percentages
