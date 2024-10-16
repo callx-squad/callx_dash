@@ -19,7 +19,7 @@ def format_date_for_api(date, start=True):
 def fetch_call_data(start_date, end_date, limit=1000):
     url = "https://api.bland.ai/v1/calls"
     headers = {"authorization": "sk-s3zix6yia4ew2w9ymga9v0jexcx0j0crqu0kuvzwqqhg3hj7z9tteiuv6i3rls5u69"}
-    
+
     all_call_data = []
     next_from = None
     total_count = 0
@@ -32,7 +32,7 @@ def fetch_call_data(start_date, end_date, limit=1000):
         }
         if next_from:
             querystring["next_from"] = next_from
-        
+
         response = requests.get(url, headers=headers, params=querystring)
         if response.status_code == 200:
             data = response.json()
@@ -50,7 +50,7 @@ def fetch_call_data(start_date, end_date, limit=1000):
 
     return total_count, pd.DataFrame([{
         "Inbound Number": call.get("from"),
-        "Call Date": call.get("created_at", "").split("T")[0],  # Extract date from timestamp
+        "Call Date": call.get("created_at", "").split("T")[0],
         "Call Duration (minutes)": call.get("call_length", 0),
         "Call Cost ($)": call.get("price", 0.0),
         "Recording": f'<a href="{call.get("recording_url")}" target="_blank">Listen</a>'
@@ -120,11 +120,11 @@ if not df.empty:
 
     st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
 
-    # Modify the DataFrame for display with HTML hyperlinks
-    df["Recording"] = df["Recording"].apply(lambda x: st.markdown(x, unsafe_allow_html=True))
+    # Display the table with HTML-rendered hyperlinks
+    df_styled = df.copy()
+    df_styled["Recording"] = df_styled["Recording"].apply(lambda x: f'<div>{x}</div>')
 
-    # Display table with sorting enabled
     with st.expander("Call Details"):
-        st.dataframe(df, use_container_width=True)
+        st.write(df_styled.to_html(escape=False, index=False), unsafe_allow_html=True)
 else:
     st.write("No data available for the selected time period.")
