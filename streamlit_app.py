@@ -29,6 +29,13 @@ def check_password():
         else:
             st.session_state["password_correct"] = False
 
+    # Center the logo and create some space
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
+    
+    st.write("")  # Add some space
+
     if "password_correct" not in st.session_state:
         # First run, show inputs for username + password.
         st.text_input("Username", key="username")
