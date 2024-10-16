@@ -210,10 +210,26 @@ if 'show_profit' not in st.session_state:
 if st.button("🤖", key="toggle_profit"):
     st.session_state.show_profit = not st.session_state.show_profit
 
-# Update the "Today" section
+# Define start_date and end_date based on the selected option
 if option == "Today":
     start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
-    
+elif option == "Yesterday":
+    start_date, end_date = datetime.combine(yesterday, datetime.min.time(), tzinfo=est), datetime.combine(yesterday, datetime.max.time(), tzinfo=est)
+elif option == "Last 7 Days":
+    start_date, end_date = datetime.combine(last_7_days, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
+elif option == "Last 30 Days":
+    start_date, end_date = datetime.combine(last_30_days, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
+else:
+    start_date = st.date_input("Start date", last_30_days)
+    end_date = st.date_input("End date", today)
+    if start_date > end_date:
+        st.error("Start date must be before or equal to end date.")
+        st.stop()
+    start_date = datetime.combine(start_date, datetime.min.time(), tzinfo=est)
+    end_date = datetime.combine(end_date, datetime.max.time(), tzinfo=est)
+
+# Update the "Today" section
+if option == "Today":
     while True:
         with main_content.container():
             start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
@@ -233,7 +249,7 @@ if option == "Today":
         st.rerun()
 
 # Update the section for other options
-if option != "Today":
+else:
     with main_content.container():
         start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
         total_count, df, total_cost, transferred_calls, converted_calls = fetch_call_data(start_date_str, end_date_str)
