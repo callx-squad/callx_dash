@@ -7,7 +7,20 @@ import time
 import hashlib
 
 # Set page config at the very beginning
-st.set_page_config(page_title="Call Data Dashboard", layout="wide", theme="dark")
+st.set_page_config(page_title="Call Data Dashboard", layout="wide")
+
+# Apply dark theme using custom CSS
+st.markdown("""
+    <style>
+    .reportview-container {
+        background: #0e1117;
+    }
+    .main {
+        background: #0e1117;
+        color: white;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Get the API key and login credentials from Streamlit secrets
 API_KEY = st.secrets["API_KEY"]
