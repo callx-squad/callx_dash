@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 # Display the header image from a URL
 image_url = "https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png"
-st.image(image_url, caption="CallX", use_column_width=False)
+st.image(image_url, caption="CallX", width=200)
 
 # Helper function to fetch data from the API with pagination
 def fetch_call_data_paginated(start_date, end_date, limit=1000):
