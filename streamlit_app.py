@@ -3,21 +3,14 @@ import pandas as pd
 import requests
 from datetime import datetime, timedelta
 import pytz
-import hashlib
+import time
 
 # Get the API key from Streamlit secrets
 API_KEY = st.secrets["API_KEY"]
-USERNAME = st.secrets["USERNAME"]
-PASSWORD = st.secrets["PASSWORD"]
 
-# Security functions
-def make_hashes(password):
-    return hashlib.sha256(str.encode(password)).hexdigest()
-
-def check_hashes(password, hashed_text):
-    if make_hashes(password) == hashed_text:
-        return hashed_text
-    return False
+if not API_KEY:
+    st.error("API_KEY is not set. Please set it in your Streamlit secrets.")
+    st.stop()
 
 # Define EST timezone
 est = pytz.timezone('US/Eastern')
@@ -119,236 +112,137 @@ def display_metrics(total_count, total_cost, transferred_calls, converted_calls,
             st.empty()
         st.empty()  # Add an empty metric to maintain layout
 
-# Add custom CSS to ensure two-column layout on mobile and adjust font sizes
-st.markdown("""
-<style>
-@media (max-width: 640px) {
-    .stMetric {
-        width: 50% !important;
-        flex: 1 1 calc(50% - 0.5rem) !important;
-        padding-right: 0.25rem !important;
-        padding-left: 0.25rem !important;
-    }
-    .stMetric-value {
-        font-size: 1rem !important;
-    }
-    .stMetric-label {
-        font-size: 0.7rem !important;
-    }
-    div[data-testid="stHorizontalBlock"] {
-        flex-wrap: wrap;
-    }
-    div[data-testid="stHorizontalBlock"] > div {
-        width: 50% !important;
-        flex: 1 1 50% !important;
-        min-width: 50% !important;
-    }
-}
-</style>
-""", unsafe_allow_html=True)
-
 # Display the logo
 st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
 
-# Security functions
-def make_hashes(password):
-    return hashlib.sha256(str.encode(password)).hexdigest()
+st.markdown("### Call Data")
 
-def check_hashes(password, hashed_text):
-    if make_hashes(password) == hashed_text:
-        return hashed_text
-    return False
+# Add date selection
+option = st.selectbox("Select a time period:", ["Today", "Yesterday", "Last 7 Days", "Last 30 Days", "Custom Date Range"])
 
-# Login section
-def login():
-    username = st.text_input("Username")
-    password = st.text_input("Password", type='password')
-    if st.button("Login"):
-        hashed_pswd = make_hashes(password)
-        if username == USERNAME and check_hashes(password, make_hashes(PASSWORD)):
-            st.session_state.logged_in = True
-            st.success("Logged In as {}".format(username))
-            st.rerun()
+# Create a placeholder for the main content
+main_content = st.empty()
+
+def style_dataframe(df):
+    def make_clickable(val):
+        if isinstance(val, str):
+            if val.startswith('<a href='):
+                return val
+            return f'<div>{val}</div>'
+        elif pd.isna(val):
+            return ''
         else:
-            st.error("Incorrect Username/Password")
-
-# Main app logic
-def main():
-    # Add sidebar
-    st.sidebar.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
+            return f'<div>{val}</div>'
     
-    # Login in sidebar
-    with st.sidebar:
-        st.subheader("Login")
-        username = st.text_input("Username")
-        password = st.text_input("Password", type='password')
-        login_button = st.button("Login")
+    styled_df = df.style.format({
+        'Call Cost ($)': '${:.2f}'.format,
+        'Call Duration (minutes)': '{:.2f}'.format
+    }).applymap(make_clickable)
+    
+    return styled_df
 
-    if 'logged_in' not in st.session_state:
-        st.session_state.logged_in = False
+def format_dataframe(df):
+    formatted_df = df.copy()
+    formatted_df['Call Cost ($)'] = formatted_df['Call Cost ($)'].apply(lambda x: f'${x:.2f}')
+    formatted_df['Call Duration (minutes)'] = formatted_df['Call Duration (minutes)'].apply(lambda x: f'{x:.2f}')
+    formatted_df['Transferred'] = formatted_df['Transferred'].apply(lambda x: 'Yes' if x else 'No')
+    return formatted_df
 
-    if login_button:
-        if username == USERNAME and check_hashes(password, make_hashes(PASSWORD)):
-            st.session_state.logged_in = True
-            st.sidebar.success("Logged In as {}".format(username))
+def create_paginated_table(df):
+    records_per_page = 25
+    total_pages = (len(df) - 1) // records_per_page + 1
+    
+    if 'page' not in st.session_state:
+        st.session_state.page = 1
+    
+    page = st.session_state.page
+    start_idx = (page - 1) * records_per_page
+    end_idx = start_idx + records_per_page
+    
+    st.write(f"Showing records {start_idx + 1} to {min(end_idx, len(df))} of {len(df)}")
+    
+    # Convert the 'Recording' column to a clickable link
+    df['Recording'] = df['Recording'].apply(lambda x: f'<a href="{x}" target="_blank">Listen</a>' if x != "No Recording" else x)
+    
+    # Display the table with HTML
+    st.write(df.iloc[start_idx:end_idx].to_html(escape=False, index=False), unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    if page > 1:
+        if col1.button('Previous 25'):
+            st.session_state.page -= 1
             st.rerun()
-        else:
-            st.sidebar.error("Incorrect Username/Password")
+    
+    if page < total_pages:
+        if col2.button('Next 25'):
+            st.session_state.page += 1
+            st.rerun()
 
-    if not st.session_state.logged_in:
-        st.title("Call Data Dashboard")
-        st.write("Please login using the sidebar to view the dashboard.")
-        return
-
-    # Your existing dashboard code goes here
-    st.title("Call Data Dashboard")
-    st.markdown("### Call Data")
-
-    # Add date selection
-    option = st.selectbox("Select a time period:", ["Today", "Yesterday", "Last 7 Days", "Last 30 Days", "Custom Date Range"])
-
-    # Create a placeholder for the main content
-    main_content = st.empty()
-
-    def style_dataframe(df):
-        def make_clickable(val):
-            if isinstance(val, str):
-                if val.startswith('<a href='):
-                    return val
-                return f'<div>{val}</div>'
-            elif pd.isna(val):
-                return ''
-            else:
-                return f'<div>{val}</div>'
-        
-        styled_df = df.style.format({
-            'Call Cost ($)': '${:.2f}'.format,
-            'Call Duration (minutes)': '{:.2f}'.format
-        }).applymap(make_clickable)
-        
-        return styled_df
-
-    def format_dataframe(df):
-        formatted_df = df.copy()
-        formatted_df['Call Cost ($)'] = formatted_df['Call Cost ($)'].apply(lambda x: f'${x:.2f}')
-        formatted_df['Call Duration (minutes)'] = formatted_df['Call Duration (minutes)'].apply(lambda x: f'{x:.2f}')
-        formatted_df['Transferred'] = formatted_df['Transferred'].apply(lambda x: 'Yes' if x else 'No')
-        return formatted_df
-
-    def create_paginated_table(df):
-        records_per_page = 25
-        total_pages = (len(df) - 1) // records_per_page + 1
-        
-        if 'page' not in st.session_state:
-            st.session_state.page = 1
-        
-        page = st.session_state.page
-        start_idx = (page - 1) * records_per_page
-        end_idx = start_idx + records_per_page
-        
-        st.write(f"Showing records {start_idx + 1} to {min(end_idx, len(df))} of {len(df)}")
-        
-        # Convert the 'Recording' column to a clickable link
-        df['Recording'] = df['Recording'].apply(lambda x: f'<a href="{x}" target="_blank">Listen</a>' if x != "No Recording" else x)
-        
-        # Display the table with HTML
-        st.write(df.iloc[start_idx:end_idx].to_html(escape=False, index=False), unsafe_allow_html=True)
-        
-        col1, col2 = st.columns(2)
-        if page > 1:
-            if col1.button('Previous 25'):
-                st.session_state.page -= 1
-                st.rerun()
-        
-        if page < total_pages:
-            if col2.button('Next 25'):
-                st.session_state.page += 1
-                st.rerun()
-
-    # Add this at the end of your script, after all other content
-    st.markdown(
-        """
-        <style>
+# Add this at the end of your script, after all other content
+st.markdown(
+    """
+    <style>
+    .stButton button {
+        position: fixed;
+        left: 5px;
+        bottom: 5px;
+        z-index: 999;
+        background: none;
+        border: none;
+        color: rgba(0,0,0,0.1);
+        font-size: 2px;
+        padding: 0;
+        width: 4px;
+        height: 4px;
+        cursor: default;
+    }
+    .stButton button:hover {
+        color: rgba(0,0,0,0.2);
+    }
+    @media (max-width: 768px) {
         .stButton button {
-            position: fixed;
+            position: absolute;
+            bottom: -400px;
             left: 5px;
-            bottom: 5px;
-            z-index: 999;
-            background: none;
-            border: none;
-            color: rgba(0,0,0,0.1);
-            font-size: 2px;
-            padding: 0;
-            width: 4px;
-            height: 4px;
-            cursor: default;
         }
-        .stButton button:hover {
-            color: rgba(0,0,0,0.2);
-        }
-        @media (max-width: 768px) {
-            .stButton button {
-                position: absolute;
-                bottom: -400px;
-                left: 5px;
-            }
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-    if 'show_profit' not in st.session_state:
-        st.session_state.show_profit = False
+if 'show_profit' not in st.session_state:
+    st.session_state.show_profit = False
 
-    if st.button("🤖", key="toggle_profit"):
-        st.session_state.show_profit = not st.session_state.show_profit
+if st.button("🤖", key="toggle_profit"):
+    st.session_state.show_profit = not st.session_state.show_profit
 
-    # Define start_date and end_date based on the selected option
-    today = datetime.now(est).date()
-    yesterday = today - timedelta(days=1)
-    last_7_days = today - timedelta(days=7)
-    last_30_days = today - timedelta(days=30)
+# Define start_date and end_date based on the selected option
+today = datetime.now(est).date()
+yesterday = today - timedelta(days=1)
+last_7_days = today - timedelta(days=7)
+last_30_days = today - timedelta(days=30)
 
-    if option == "Today":
-        start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
-    elif option == "Yesterday":
-        start_date, end_date = datetime.combine(yesterday, datetime.min.time(), tzinfo=est), datetime.combine(yesterday, datetime.max.time(), tzinfo=est)
-    elif option == "Last 7 Days":
-        start_date, end_date = datetime.combine(last_7_days, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
-    elif option == "Last 30 Days":
-        start_date, end_date = datetime.combine(last_30_days, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
-    else:
-        start_date = st.date_input("Start date", last_30_days)
-        end_date = st.date_input("End date", today)
-        if start_date > end_date:
-            st.error("Start date must be before or equal to end date.")
-            st.stop()
-        start_date = datetime.combine(start_date, datetime.min.time(), tzinfo=est)
-        end_date = datetime.combine(end_date, datetime.max.time(), tzinfo=est)
+if option == "Today":
+    start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
+elif option == "Yesterday":
+    start_date, end_date = datetime.combine(yesterday, datetime.min.time(), tzinfo=est), datetime.combine(yesterday, datetime.max.time(), tzinfo=est)
+elif option == "Last 7 Days":
+    start_date, end_date = datetime.combine(last_7_days, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
+elif option == "Last 30 Days":
+    start_date, end_date = datetime.combine(last_30_days, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
+else:
+    start_date = st.date_input("Start date", last_30_days)
+    end_date = st.date_input("End date", today)
+    if start_date > end_date:
+        st.error("Start date must be before or equal to end date.")
+        st.stop()
+    start_date = datetime.combine(start_date, datetime.min.time(), tzinfo=est)
+    end_date = datetime.combine(end_date, datetime.max.time(), tzinfo=est)
 
-    # Update the "Today" section
-    if option == "Today":
-        while True:
-            with main_content.container():
-                start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
-                total_count, df, total_cost, transferred_calls, converted_calls = fetch_call_data(start_date_str, end_date_str)
-
-                if not df.empty:
-                    total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit = process_data(total_count, total_cost, transferred_calls, converted_calls)
-                    display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, st.session_state.show_profit)
-
-                    with st.expander("Call Details"):
-                        formatted_df = format_dataframe(df)
-                        create_paginated_table(formatted_df)
-                else:
-                    st.write("No data available for today.")
-
-                time.sleep(10)
-                st.rerun()
-
-    # Update the section for other options
-    else:
+# Update the "Today" section
+if option == "Today":
+    while True:
         with main_content.container():
             start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
             total_count, df, total_cost, transferred_calls, converted_calls = fetch_call_data(start_date_str, end_date_str)
@@ -361,12 +255,23 @@ def main():
                     formatted_df = format_dataframe(df)
                     create_paginated_table(formatted_df)
             else:
-                st.write("No data available for the selected time period.")
+                st.write("No data available for today.")
 
-    if st.sidebar.button("Logout"):
-        st.session_state.logged_in = False
+        time.sleep(10)
         st.rerun()
 
-# Initialize the app
-if __name__ == '__main__':
-    main()
+# Update the section for other options
+else:
+    with main_content.container():
+        start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
+        total_count, df, total_cost, transferred_calls, converted_calls = fetch_call_data(start_date_str, end_date_str)
+
+        if not df.empty:
+            total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit = process_data(total_count, total_cost, transferred_calls, converted_calls)
+            display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, st.session_state.show_profit)
+
+            with st.expander("Call Details"):
+                formatted_df = format_dataframe(df)
+                create_paginated_table(formatted_df)
+        else:
+            st.write("No data available for the selected time period.")
