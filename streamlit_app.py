@@ -178,7 +178,7 @@ def create_paginated_table(df):
 st.markdown(
     """
     <style>
-    .stIcon {
+    .stButton button {
         position: fixed;
         right: 20px;
         bottom: 20px;
@@ -192,7 +192,7 @@ st.markdown(
 if 'show_profit' not in st.session_state:
     st.session_state.show_profit = False
 
-if st.button("🤖 Toggle Profit", key="toggle_profit"):
+if st.button(". Toggle Profit", key="toggle_profit"):
     st.session_state.show_profit = not st.session_state.show_profit
 
 # Update the "Today" section
