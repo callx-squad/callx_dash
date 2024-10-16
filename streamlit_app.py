@@ -97,23 +97,22 @@ def process_data(total_count, total_cost, transferred_calls, converted_calls):
     return total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit
 
 def display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, show_profit=False):
-    # Create a single row with all metrics
-    cols = st.columns(3)
+    col1, col2, col3 = st.columns(3)
     
-    with cols[0]:
+    with col1:
         st.metric("Total Calls", total_count)
         st.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
     
-    with cols[1]:
+    with col2:
         st.metric("Converted", "TBC")
         st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
     
-    with cols[2]:
+    with col3:
         if show_profit:
             st.metric("Call Profit ($)", f"${call_profit:.2f}")
         else:
             st.empty()
-        st.empty()  # Add an empty metric to maintain layout
+        st.empty()
 
 # New function for password hashing
 def hash_password(password):
@@ -121,20 +120,99 @@ def hash_password(password):
 
 # New function for login
 def login():
-    st.title("Login to Call Data Dashboard")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        if username == USERNAME and hash_password(password) == hash_password(PASSWORD):
-            st.session_state.logged_in = True
-            st.success("Logged in successfully!")
-            st.rerun()
-        else:
-            st.error("Invalid username or password")
+    st.markdown(
+        """
+        <style>
+        .reportview-container {
+            background: #0e1117;
+        }
+        .main {
+            background: #0e1117;
+        }
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-box {
+            background: #262730;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            width: 300px;
+        }
+        .login-title {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    with st.container():
+        st.markdown('<div class="login-container">', unsafe_allow_html=True)
+        with st.form(key='login_form'):
+            st.markdown('<h1 class="login-title">Login</h1>', unsafe_allow_html=True)
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            submit_button = st.form_submit_button(label='Login')
+            
+            if submit_button:
+                if username == USERNAME and hash_password(password) == hash_password(PASSWORD):
+                    st.session_state.logged_in = True
+                    st.success("Logged in successfully!")
+                    st.rerun()
+                else:
+                    st.error("Invalid username or password")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 def show_dashboard():
-    # Display the logo
-    st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
+    st.markdown(
+        """
+        <style>
+        .reportview-container {
+            background: #0e1117;
+        }
+        .main {
+            background: #0e1117;
+        }
+        .stMetric {
+            background: #262730;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        .stMetric-label {
+            font-size: 14px;
+            color: #9e9e9e;
+        }
+        .stMetric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .stExpander {
+            background: #262730;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .stDateInput > div > div {
+            background: #262730;
+        }
+        .stSelectbox > div > div {
+            background: #262730;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    col1, col2, col3 = st.columns([1, 3, 1])
+    with col2:
+        st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
 
     st.title("Call Data Dashboard")
 
@@ -302,7 +380,7 @@ def show_dashboard():
         st.rerun()
 
 def main():
-    st.set_page_config(page_title="Call Data Dashboard", layout="wide")
+    st.set_page_config(page_title="Call Data Dashboard", layout="wide", theme="dark")
 
     if 'logged_in' not in st.session_state:
         st.session_state.logged_in = False
