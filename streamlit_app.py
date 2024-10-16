@@ -99,28 +99,54 @@ def display_metrics(total_count, total_cost, transferred_calls, converted_calls,
     # Use custom CSS to adjust layout on mobile
     st.markdown("""
     <style>
+    .metric-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    .metric-container {
+        flex: 0 0 calc(50% - 10px);
+        margin-bottom: 20px;
+    }
     @media (max-width: 768px) {
-        div[data-testid="column"] {
-            width: 50% !important;
-            flex: 1 1 calc(50% - 1rem) !important;
-            min-width: calc(50% - 1rem) !important;
+        .metric-container {
+            flex: 0 0 calc(50% - 5px);
         }
     }
     </style>
     """, unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
-    col1.metric("Total Calls", total_count)
-    col2.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
-
-    col3, col4 = st.columns(2)
-    col3.metric("Converted", "TBC")
-    col4.metric("Total Call Cost ($)", f"${total_cost:.2f}")
+    metrics_html = f"""
+    <div class="metric-row">
+        <div class="metric-container">
+            <div class="metric-label">Total Calls</div>
+            <div class="metric-value">{total_count}</div>
+        </div>
+        <div class="metric-container">
+            <div class="metric-label">Transferred ({transferred_pct:.2f}%)</div>
+            <div class="metric-value">{transferred_calls}</div>
+        </div>
+        <div class="metric-container">
+            <div class="metric-label">Converted</div>
+            <div class="metric-value">TBC</div>
+        </div>
+        <div class="metric-container">
+            <div class="metric-label">Total Call Cost ($)</div>
+            <div class="metric-value">${total_cost:.2f}</div>
+        </div>
+    """
 
     if show_profit:
-        col5, col6 = st.columns(2)
-        col5.metric("Call Profit ($)", f"${call_profit:.2f}")
-        col6.empty()  # This keeps the layout balanced
+        metrics_html += f"""
+        <div class="metric-container">
+            <div class="metric-label">Call Profit ($)</div>
+            <div class="metric-value">${call_profit:.2f}</div>
+        </div>
+        """
+
+    metrics_html += "</div>"
+
+    st.markdown(metrics_html, unsafe_allow_html=True)
 
 # Display the logo
 st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
