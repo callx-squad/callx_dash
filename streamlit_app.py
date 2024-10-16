@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 from datetime import datetime, timedelta
 
-# Display the header image from a URL with a width of 200px
+# Display the header image from a URL
 image_url = "https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png"
 st.image(image_url, width=200)
 
@@ -13,7 +13,7 @@ def fetch_call_data_paginated(start_date, end_date, limit=1000):
     headers = {"authorization": "sk-s3zix6yia4ew2w9ymga9v0jexcx0j0crqu0kuvzwqqhg3hj7z9tteiuv6i3rls5u69"}
     
     all_call_data = []
-    cursor = None  # Replace with cursor or token if API supports cursor-based pagination
+    next_from = None
 
     while True:
         querystring = {
@@ -22,34 +22,31 @@ def fetch_call_data_paginated(start_date, end_date, limit=1000):
             "limit": str(limit),
         }
         
-        # Add the "cursor" parameter for pagination if it exists
-        if cursor:
-            querystring["cursor"] = cursor
+        if next_from:
+            querystring["next_from"] = next_from
         
         response = requests.get(url, headers=headers, params=querystring)
         
         if response.status_code == 200:
             data = response.json()
             calls = data['calls']
-            all_call_data.extend(calls)  # Append calls to the list
+            all_call_data.extend(calls)
 
-            # If there's a "cursor" value in the response, continue pagination
-            if 'cursor' in data and data['cursor']:
-                cursor = data['cursor']
+            if 'next_from' in data and data['next_from']:
+                next_from = data['next_from']
             else:
                 break
         else:
             st.error(f"Failed to fetch data from the API. Status code: {response.status_code}")
             break
     
-    # Create a DataFrame from the collected call data
+    # Create a DataFrame from the collected call data with selected columns
     if all_call_data:
         return pd.DataFrame([{
-            "Call ID": call["c_id"],
-            "Created At": call["created_at"],
-            "Call Length (minutes)": call["call_length"],
-            "Price ($)": call["price"],
-            "Status": call["status"]
+            "Inbound Number": call["from"],
+            "Call Duration (minutes)": call["call_length"],
+            "Call Cost ($)": call["price"],
+            "Recording URL": call["recording_url"]
         } for call in all_call_data])
     else:
         return pd.DataFrame()
@@ -67,7 +64,6 @@ option = st.selectbox(
     ["Today", "Yesterday", "Last 7 Days", "Last 30 Days", "Custom Date Range"]
 )
 
-# Set the date range based on user selection
 if option == "Today":
     start_date = today
     end_date = today
@@ -95,10 +91,12 @@ df = fetch_call_data_paginated(start_date_str, end_date_str)
 
 if not df.empty:
     total_calls = df.shape[0]
-    total_cost = df["Price ($)"].sum()
+    total_cost = df["Call Cost ($)"].sum()
     
     st.metric("Total Calls", total_calls)
     st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
+    
+    # Display the updated DataFrame
     st.dataframe(df)
 else:
     st.write("No data available for the selected time period.")
