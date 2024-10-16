@@ -205,10 +205,26 @@ def show_dashboard():
         .stSelectbox > div > div {
             background: #262730;
         }
+        .logout-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
         </style>
         """,
         unsafe_allow_html=True
     )
+
+    # Add logout button to the top right corner
+    with st.container():
+        st.markdown(
+            '<div class="logout-button">'
+            '<form action="/" method="get">'
+            '<button type="submit">Logout</button>'
+            '</form>'
+            '</div>',
+            unsafe_allow_html=True
+        )
 
     col1, col2, col3 = st.columns([1, 3, 1])
     with col2:
@@ -375,10 +391,6 @@ def show_dashboard():
             else:
                 st.write("No data available for the selected time period.")
 
-    if st.button("Logout"):
-        st.session_state.logged_in = False
-        st.rerun()
-
 def main():
     st.set_page_config(page_title="Call Data Dashboard", layout="wide", theme="dark")
 
@@ -389,6 +401,10 @@ def main():
         login()
     else:
         show_dashboard()
+        # Check if the logout button was clicked
+        if st.button("Logout", key="logout_button"):
+            st.session_state.logged_in = False
+            st.rerun()
 
 # Initialize the app
 if __name__ == '__main__':
