@@ -68,7 +68,7 @@ yesterday = today - timedelta(days=1)
 last_7_days = today - timedelta(days=7)
 last_30_days = today - timedelta(days=30)
 
-st.title("📞 Call Data Analysis")
+st.title("Call Data Analysis")
 
 # Add date selection options
 option = st.selectbox(
