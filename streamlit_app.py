@@ -74,12 +74,9 @@ def main():
     if not check_password():
         st.stop()  # Do not continue if check_password is not True.
     
-<<<<<<< HEAD
     # Retrieve API_KEY from Streamlit secrets
     API_KEY = st.secrets.get("API_KEY")
     
-=======
->>>>>>> parent of 58bda6d (Update streamlit_app.py)
     # Your existing dashboard code starts here
     if not API_KEY:
         st.error("API_KEY is not set. Please set it in your Streamlit secrets.")
