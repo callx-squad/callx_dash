@@ -33,6 +33,13 @@ def fetch_call_data(start_date, end_date):
     from_index = 0
     to_index = 999  # Start with the first 1000 records
 
+    call_length_distribution = {
+        '0-15': 0,
+        '16-30': 0,
+        '31-60': 0,
+        '61+': 0
+    }
+
     while True:
         querystring = {
             "start_date": start_date,
@@ -52,8 +59,23 @@ def fetch_call_data(start_date, end_date):
                 if call.get("transferred_to") is not None:
                     transferred_calls += 1
                 call_length = call.get("call_length", 0)
-                if isinstance(call_length, (int, float)) and call_length > 30:
-                    converted_calls += 1
+                
+                # Debug: Print call length for each call
+                st.write(f"Call length: {call_length}")
+                
+                if isinstance(call_length, (int, float)):
+                    if call_length <= 15:
+                        call_length_distribution['0-15'] += 1
+                    elif 15 < call_length <= 30:
+                        call_length_distribution['16-30'] += 1
+                    elif 30 < call_length <= 60:
+                        call_length_distribution['31-60'] += 1
+                        converted_calls += 1
+                    else:
+                        call_length_distribution['61+'] += 1
+                        converted_calls += 1
+                else:
+                    st.write(f"Invalid call length: {call_length}, type: {type(call_length)}")
             
             all_call_data.extend(calls)
             
@@ -81,6 +103,7 @@ def fetch_call_data(start_date, end_date):
     st.write(f"Total count from API: {total_count}")
     st.write(f"Transferred calls: {transferred_calls}")
     st.write(f"Converted calls: {converted_calls}")
+    st.write(f"Call length distribution: {call_length_distribution}")
 
     return total_count, df, total_cost, transferred_calls, converted_calls
 
