@@ -3,6 +3,10 @@ import pandas as pd
 import requests
 from datetime import datetime, timedelta
 
+# Display the header image from a URL
+image_url = "https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png"
+st.image(image_url, caption="CallX", use_column_width=True)
+
 # Helper function to fetch data from the API with pagination
 def fetch_call_data_paginated(start_date, end_date, limit=1000):
     url = "https://api.bland.ai/v1/calls"
@@ -56,7 +60,7 @@ yesterday = today - timedelta(days=1)
 last_7_days = today - timedelta(days=7)
 last_30_days = today - timedelta(days=30)
 
-st.title("📞 Call Data Analysis")
+st.title("Call Data Analysis")
 
 option = st.selectbox(
     "Select a time period:",
