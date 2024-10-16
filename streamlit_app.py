@@ -81,7 +81,7 @@ if option == "Today":
             # Format dates
             start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
 
-            # Fetch data
+            # Fetch data (this will now update every time)
             total_count, df = fetch_call_data(start_date_str, end_date_str)
 
             if not df.empty:
@@ -104,12 +104,11 @@ if option == "Today":
             else:
                 st.write("No data available for today.")
 
-            # Wait for 10 seconds before updating
-            time.sleep(10)
-            
-            # Check if the user has changed the selection
-            if st.session_state.get('date_selection') != 'Today':
-                break
+        # Wait for 10 seconds before updating
+        time.sleep(10)
+        
+        # Force a rerun of the script
+        st.rerun()
 
 elif option == "Yesterday":
     start_date, end_date = datetime.combine(yesterday, datetime.min.time(), tzinfo=est), datetime.combine(yesterday, datetime.max.time(), tzinfo=est)
