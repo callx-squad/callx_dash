@@ -159,17 +159,16 @@ def check_hashes(password, hashed_text):
 
 # Login section
 def login():
-    st.subheader("Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type='password')
     if st.button("Login"):
         hashed_pswd = make_hashes(password)
         if username == USERNAME and check_hashes(password, make_hashes(PASSWORD)):
+            st.session_state.logged_in = True
             st.success("Logged In as {}".format(username))
-            return True
+            st.rerun()
         else:
             st.error("Incorrect Username/Password")
-    return False
 
 # Main app logic
 def main():
@@ -179,9 +178,9 @@ def main():
         st.session_state.logged_in = False
 
     if not st.session_state.logged_in:
-        st.session_state.logged_in = login()
-
-    if st.session_state.logged_in:
+        st.subheader("Login")
+        login()
+    else:
         st.markdown("### Call Data")
 
         # Add date selection
@@ -285,6 +284,11 @@ def main():
             st.session_state.show_profit = not st.session_state.show_profit
 
         # Define start_date and end_date based on the selected option
+        today = datetime.now(est).date()
+        yesterday = today - timedelta(days=1)
+        last_7_days = today - timedelta(days=7)
+        last_30_days = today - timedelta(days=30)
+
         if option == "Today":
             start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
         elif option == "Yesterday":
@@ -337,9 +341,6 @@ def main():
                         create_paginated_table(formatted_df)
                 else:
                     st.write("No data available for the selected time period.")
-
-    else:
-        st.warning("Please login to access the app.")
 
 # Initialize the app
 if __name__ == '__main__':
