@@ -133,22 +133,34 @@ def login():
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 80vh;
+            height: 100vh;
         }
         .login-box {
             background: #262730;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
             width: 300px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .login-title {
-            color: #ffffff;
-            text-align: center;
+        .login-logo {
+            display: flex;
+            justify-content: center;
             margin-bottom: 20px;
+        }
+        .stTextInput>div>div>input {
+            background-color: #3b3b3b;
+            color: white;
         }
         .stButton>button {
             width: 100%;
+            background-color: #9146FF;
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 0;
+            margin-top: 20px;
         }
         </style>
         """,
@@ -159,7 +171,7 @@ def login():
     with col2:
         st.markdown('<div class="login-container">', unsafe_allow_html=True)
         st.markdown('<div class="login-box">', unsafe_allow_html=True)
-        st.markdown('<h1 class="login-title">Login</h1>', unsafe_allow_html=True)
+        st.markdown('<div class="login-logo"><img src="https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png" width="200"></div>', unsafe_allow_html=True)
         
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
