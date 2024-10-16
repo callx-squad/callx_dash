@@ -85,18 +85,18 @@ else:
 start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
 
 # Fetch data
-total_calls, df = fetch_call_data(start_date_str, end_date_str)
+total_count, df = fetch_call_data(start_date_str, end_date_str)
 
 if not df.empty:
     total_cost = df["Call Cost ($)"].sum()
     transferred_calls = df[df["Transferred"]].shape[0]
     converted_calls = df[df["Call Duration (minutes)"] > 30].shape[0]
-    transferred_pct = (transferred_calls / total_calls) * 100 if total_calls else 0
+    transferred_pct = (transferred_calls / total_count) * 100 if total_count else 0
     converted_pct = (converted_calls / transferred_calls) * 100 if transferred_calls else 0
 
     # Display metrics
     col1, col2, col3 = st.columns(3)
-    col1.metric("Total Calls", total_calls)
+    col1.metric("Total Calls", total_count)  # Updated to use total_count
     col2.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
     col3.metric(f"Converted ({converted_pct:.2f}%)", converted_calls)
     st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
