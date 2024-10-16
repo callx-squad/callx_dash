@@ -29,22 +29,57 @@ def check_password():
         else:
             st.session_state["password_correct"] = False
 
+    st.markdown(
+        """
+        <style>
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .login-box {
+            width: 300px;
+            padding: 20px;
+            background-color: #f0f2f6;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .login-logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown('<div class="login-container">', unsafe_allow_html=True)
+    st.markdown('<div class="login-box">', unsafe_allow_html=True)
+    
+    # Display logo at the top of the login screen
+    st.markdown('<div class="login-logo">', unsafe_allow_html=True)
+    st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
+    st.markdown('</div>', unsafe_allow_html=True)
+
     if "password_correct" not in st.session_state:
         # First run, show inputs for username + password.
         st.text_input("Username", key="username")
         st.text_input("Password", type="password", key="password")
         st.button("Login", on_click=password_entered)
-        return False
     elif not st.session_state["password_correct"]:
         # Password incorrect, show input + error.
         st.text_input("Username", key="username")
         st.text_input("Password", type="password", key="password")
         st.button("Login", on_click=password_entered)
         st.error("😕 User not known or password incorrect")
-        return False
-    else:
-        # Password correct.
-        return True
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    return st.session_state.get("password_correct", False)
 
 # Main function to display dashboard
 def main():
