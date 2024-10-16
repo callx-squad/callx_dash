@@ -46,7 +46,7 @@ def fetch_call_data_paginated(start_date, end_date, limit=1000):
             "Inbound Number": call["from"],
             "Call Duration (minutes)": call["call_length"],
             "Call Cost ($)": call["price"],
-            "Recording URL": f"[Listen]({call['recording_url']})" if call['recording_url'] else "No Recording"
+            "Recording URL": f'<a href="{call["recording_url"]}" target="_blank">Listen</a>' if call["recording_url"] else "No Recording"
         } for call in all_call_data])
     else:
         return pd.DataFrame()
@@ -93,10 +93,18 @@ if not df.empty:
     total_calls = df.shape[0]
     total_cost = df["Call Cost ($)"].sum()
     
+    # Calculate transferred calls (over 60 seconds) and converted calls (over 30 minutes)
+    transferred_calls = df[df["Call Duration (minutes)"] > 1].shape[0]
+    converted_calls = df[df["Call Duration (minutes)"] > 30].shape[0]
+    
+    # Display metrics
     st.metric("Total Calls", total_calls)
+    st.metric("Transferred Calls (over 60 seconds)", transferred_calls)
+    st.metric("Converted Calls (over 30 minutes)", converted_calls)
     st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
     
     # Display the updated DataFrame with hyperlinks
-    st.markdown(df.to_markdown(), unsafe_allow_html=True)
+    df_html = df.to_html(escape=False, index=False)
+    st.write(df_html, unsafe_allow_html=True)
 else:
     st.write("No data available for the selected time period.")
