@@ -139,30 +139,36 @@ def format_dataframe(df):
     formatted_df['Call Cost ($)'] = formatted_df['Call Cost ($)'].apply(lambda x: f'${x:.2f}')
     formatted_df['Call Duration (minutes)'] = formatted_df['Call Duration (minutes)'].apply(lambda x: f'{x:.2f}')
     formatted_df['Transferred'] = formatted_df['Transferred'].apply(lambda x: 'Yes' if x else 'No')
-    formatted_df['Recording'] = formatted_df['Recording'].apply(lambda x: f'<a href="{x}" target="_blank">Listen</a>' if x != "No Recording" else x)
     return formatted_df
 
 def create_paginated_table(df):
     records_per_page = 25
     total_pages = (len(df) - 1) // records_per_page + 1
     
-    page = st.number_input('Page', min_value=1, max_value=total_pages, value=1)
+    if 'page' not in st.session_state:
+        st.session_state.page = 1
+    
+    page = st.session_state.page
     start_idx = (page - 1) * records_per_page
     end_idx = start_idx + records_per_page
     
     st.write(f"Showing records {start_idx + 1} to {min(end_idx, len(df))} of {len(df)}")
     
-    st.table(df.iloc[start_idx:end_idx])
+    # Convert the 'Recording' column to a clickable link
+    df['Recording'] = df['Recording'].apply(lambda x: f'<a href="{x}" target="_blank">Listen</a>' if x != "No Recording" else x)
+    
+    # Display the table with HTML
+    st.write(df.iloc[start_idx:end_idx].to_html(escape=False, index=False), unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     if page > 1:
         if col1.button('Previous 25'):
-            st.session_state.page = page - 1
+            st.session_state.page -= 1
             st.rerun()
     
     if page < total_pages:
         if col2.button('Next 25'):
-            st.session_state.page = page + 1
+            st.session_state.page += 1
             st.rerun()
 
 if option == "Today":
