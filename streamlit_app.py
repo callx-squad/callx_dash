@@ -199,6 +199,13 @@ st.markdown(
     .stButton button:hover {
         color: rgba(0,0,0,0.2);
     }
+    @media (max-width: 768px) {
+        .stButton button {
+            position: static;
+            margin-top: 20px;
+            margin-left: 5px;
+        }
+    }
     </style>
     """,
     unsafe_allow_html=True
