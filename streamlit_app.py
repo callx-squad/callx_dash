@@ -96,52 +96,47 @@ def process_data(total_count, total_cost, transferred_calls, converted_calls):
     return total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit
 
 def display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, show_profit=False):
-    # Create three rows of metrics
-    row1 = st.columns(2)
-    row2 = st.columns(2)
-    row3 = st.columns(2)
+    # Create a single row with all metrics
+    cols = st.columns(3)
     
-    # First row
-    with row1[0]:
+    with cols[0]:
         st.metric("Total Calls", total_count)
-    with row1[1]:
         st.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
     
-    # Second row
-    with row2[0]:
+    with cols[1]:
         st.metric("Converted", "TBC")
-    with row2[1]:
         st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
     
-    # Third row (for profit)
-    if show_profit:
-        with row3[0]:
+    with cols[2]:
+        if show_profit:
             st.metric("Call Profit ($)", f"${call_profit:.2f}")
-    else:
-        # Add an empty metric to maintain layout
-        with row3[0]:
+        else:
             st.empty()
-    
-    # Always add an empty metric in the second column of the third row
-    # This ensures consistent layout whether profit is shown or not
-    with row3[1]:
-        st.empty()
+        st.empty()  # Add an empty metric to maintain layout
 
-# Add custom CSS to ensure two-column layout on mobile
+# Add custom CSS to ensure two-column layout on mobile and adjust font sizes
 st.markdown("""
 <style>
 @media (max-width: 640px) {
     .stMetric {
         width: 50% !important;
-        flex: 1 1 calc(50% - 1rem) !important;
-        padding-right: 0.5rem !important;
-        padding-left: 0.5rem !important;
+        flex: 1 1 calc(50% - 0.5rem) !important;
+        padding-right: 0.25rem !important;
+        padding-left: 0.25rem !important;
     }
     .stMetric-value {
-        font-size: 1.25rem !important;
+        font-size: 1rem !important;
     }
     .stMetric-label {
-        font-size: 0.875rem !important;
+        font-size: 0.7rem !important;
+    }
+    div[data-testid="stHorizontalBlock"] {
+        flex-wrap: wrap;
+    }
+    div[data-testid="stHorizontalBlock"] > div {
+        width: 50% !important;
+        flex: 1 1 50% !important;
+        min-width: 50% !important;
     }
 }
 </style>
