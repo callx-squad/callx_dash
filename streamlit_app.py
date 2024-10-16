@@ -4,6 +4,7 @@ import requests
 from datetime import datetime, timedelta
 import pytz
 import os
+import time
 
 # Get the API key from Streamlit secrets
 API_KEY = st.secrets["API_KEY"]
@@ -71,6 +72,45 @@ option = st.selectbox("Select a time period:", ["Today", "Yesterday", "Last 7 Da
 
 if option == "Today":
     start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
+    
+    # Create a placeholder for the data
+    data_placeholder = st.empty()
+    
+    while True:
+        with data_placeholder.container():
+            # Format dates
+            start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
+
+            # Fetch data
+            total_count, df = fetch_call_data(start_date_str, end_date_str)
+
+            if not df.empty:
+                total_cost = df["Call Cost ($)"].sum()
+                transferred_calls = df[df["Transferred"]].shape[0]
+                converted_calls = df[df["Call Duration (minutes)"] > 30].shape[0]
+                transferred_pct = (transferred_calls / total_count) * 100 if total_count else 0
+                converted_pct = (converted_calls / transferred_calls) * 100 if transferred_calls else 0
+
+                # Display metrics
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Total Calls", total_count)
+                col2.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
+                col3.metric(f"Converted ({converted_pct:.2f}%)", converted_calls)
+                st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
+
+                # Display the table
+                with st.expander("Call Details"):
+                    st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
+            else:
+                st.write("No data available for today.")
+
+            # Wait for 10 seconds before updating
+            time.sleep(10)
+            
+            # Check if the user has changed the selection
+            if st.session_state.get('date_selection') != 'Today':
+                break
+
 elif option == "Yesterday":
     start_date, end_date = datetime.combine(yesterday, datetime.min.time(), tzinfo=est), datetime.combine(yesterday, datetime.max.time(), tzinfo=est)
 elif option == "Last 7 Days":
@@ -83,28 +123,33 @@ else:
     if start_date > end_date:
         st.error("Start date must be before or equal to end date.")
 
-# Format dates
-start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
+# Store the current selection in session state
+st.session_state['date_selection'] = option
 
-# Fetch data
-total_count, df = fetch_call_data(start_date_str, end_date_str)
+# For options other than "Today", use the existing code
+if option != "Today":
+    # Format dates
+    start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
 
-if not df.empty:
-    total_cost = df["Call Cost ($)"].sum()
-    transferred_calls = df[df["Transferred"]].shape[0]
-    converted_calls = df[df["Call Duration (minutes)"] > 30].shape[0]
-    transferred_pct = (transferred_calls / total_count) * 100 if total_count else 0
-    converted_pct = (converted_calls / transferred_calls) * 100 if transferred_calls else 0
+    # Fetch data
+    total_count, df = fetch_call_data(start_date_str, end_date_str)
 
-    # Display metrics
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Calls", total_count)  # Updated to use total_count
-    col2.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
-    col3.metric(f"Converted ({converted_pct:.2f}%)", converted_calls)
-    st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
+    if not df.empty:
+        total_cost = df["Call Cost ($)"].sum()
+        transferred_calls = df[df["Transferred"]].shape[0]
+        converted_calls = df[df["Call Duration (minutes)"] > 30].shape[0]
+        transferred_pct = (transferred_calls / total_count) * 100 if total_count else 0
+        converted_pct = (converted_calls / transferred_calls) * 100 if transferred_calls else 0
 
-    # Display the table
-    with st.expander("Call Details"):
-        st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
-else:
-    st.write("No data available for the selected time period.")
+        # Display metrics
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Calls", total_count)
+        col2.metric(f"Transferred ({transferred_pct:.2f}%)", transferred_calls)
+        col3.metric(f"Converted ({converted_pct:.2f}%)", converted_calls)
+        st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
+
+        # Display the table
+        with st.expander("Call Details"):
+            st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
+    else:
+        st.write("No data available for the selected time period.")
