@@ -135,6 +135,20 @@ def style_dataframe(df):
     
     return styled_df
 
+def format_dataframe(df):
+    def format_recording(val):
+        if pd.isna(val) or val == "No Recording":
+            return "No Recording"
+        return f'<a href="{val}" target="_blank">Listen</a>'
+
+    formatted_df = df.copy()
+    formatted_df['Call Cost ($)'] = formatted_df['Call Cost ($)'].apply(lambda x: f'${x:.2f}')
+    formatted_df['Call Duration (minutes)'] = formatted_df['Call Duration (minutes)'].apply(lambda x: f'{x:.2f}')
+    formatted_df['Transferred'] = formatted_df['Transferred'].apply(lambda x: 'Yes' if x else 'No')
+    formatted_df['Recording'] = formatted_df['Recording'].apply(format_recording)
+    
+    return formatted_df
+
 if option == "Today":
     start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
     
@@ -148,8 +162,8 @@ if option == "Today":
                 display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct)
 
                 with st.expander("Call Details"):
-                    styled_df = style_dataframe(df)
-                    html_table = styled_df.to_html(escape=False, index=False)
+                    formatted_df = format_dataframe(df)
+                    html_table = formatted_df.to_html(escape=False, index=False)
 
                     sortable_table = f"""
                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -206,8 +220,8 @@ if option != "Today":
             display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct)
 
             with st.expander("Call Details"):
-                styled_df = style_dataframe(df)
-                html_table = styled_df.to_html(escape=False, index=False)
+                formatted_df = format_dataframe(df)
+                html_table = formatted_df.to_html(escape=False, index=False)
 
                 sortable_table = f"""
                 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
