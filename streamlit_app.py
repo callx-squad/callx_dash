@@ -6,6 +6,9 @@ import pytz
 import time
 import hashlib
 
+# Set page config at the very beginning
+st.set_page_config(page_title="Call Data Dashboard", layout="wide", theme="dark")
+
 # Get the API key and login credentials from Streamlit secrets
 API_KEY = st.secrets["API_KEY"]
 USERNAME = st.secrets["USERNAME"]
@@ -404,8 +407,6 @@ def show_dashboard():
                 st.write("No data available for the selected time period.")
 
 def main():
-    st.set_page_config(page_title="Call Data Dashboard", layout="wide", theme="dark")
-
     if 'logged_in' not in st.session_state:
         st.session_state.logged_in = False
 
