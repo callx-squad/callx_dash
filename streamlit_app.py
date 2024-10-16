@@ -180,8 +180,6 @@ def fetch_call_data(start_date, end_date):
     from_index = 0
     to_index = 999  # Start with the first 1000 records
 
-    st.write(f"Fetching data from {start_date} to {end_date}")
-
     while True:
         querystring = {
             "start_date": start_date,
@@ -190,14 +188,11 @@ def fetch_call_data(start_date, end_date):
             "to": str(to_index)
         }
 
-        st.write(f"Fetching records {from_index} to {to_index}")
         response = requests.get(url, headers=headers, params=querystring)
         if response.status_code == 200:
             data = response.json()
             total_count = data.get('total_count', 0)
             calls = data.get('calls', [])
-            
-            st.write(f"Received {len(calls)} calls")
             
             for call in calls:
                 price = call.get("price")
@@ -228,8 +223,6 @@ def fetch_call_data(start_date, end_date):
         else:
             st.error(f"Failed to fetch data. Status: {response.status_code}")
             break
-
-    st.write(f"Total calls processed: {len(all_call_data)}")
 
     df = pd.DataFrame([{
         "Inbound Number": call.get("from"),
