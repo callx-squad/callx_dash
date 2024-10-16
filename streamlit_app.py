@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 from datetime import datetime, timedelta
 
-# Display the header image from a URL
+# Display the header image from a URL with a width of 200px
 image_url = "https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png"
 st.image(image_url, width=200)
 
@@ -33,6 +33,10 @@ def fetch_call_data_paginated(start_date, end_date, limit=1000):
             calls = data['calls']
             all_call_data.extend(calls)  # Append calls to the list
 
+            # Debugging: Check how many calls you get per batch and if a 'next_from' token is present
+            st.write(f"Fetched {len(calls)} calls in this batch.")
+            st.write(data.get('next_from'))  # Display the pagination token
+
             # If there's a "next_from" value in the response, continue pagination
             if 'next_from' in data and data['next_from']:
                 next_from = data['next_from']
@@ -60,13 +64,14 @@ yesterday = today - timedelta(days=1)
 last_7_days = today - timedelta(days=7)
 last_30_days = today - timedelta(days=30)
 
-st.title("Call Data Analysis")
+st.title("📞 Call Data Analysis")
 
 option = st.selectbox(
     "Select a time period:",
     ["Today", "Yesterday", "Last 7 Days", "Last 30 Days", "Custom Date Range"]
 )
 
+# Set the date range based on user selection
 if option == "Today":
     start_date = today
     end_date = today
