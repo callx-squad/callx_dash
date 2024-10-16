@@ -8,7 +8,7 @@ image_url = "https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57
 st.image(image_url, width=200)
 
 # Helper function to fetch data from the API with pagination
-def fetch_call_data_paginated(start_date, end_date, limit=1000):
+def fetch_call_data_paginated(start_date, end_date, limit=100000):
     url = "https://api.bland.ai/v1/calls"
     headers = {"authorization": "sk-s3zix6yia4ew2w9ymga9v0jexcx0j0crqu0kuvzwqqhg3hj7z9tteiuv6i3rls5u69"}
     
