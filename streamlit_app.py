@@ -97,10 +97,14 @@ if not df.empty:
     transferred_calls = df[df["Call Duration (minutes)"] > 1].shape[0]
     converted_calls = df[df["Call Duration (minutes)"] > 30].shape[0]
     
-    # Display metrics
-    st.metric("Total Calls", total_calls)
-    st.metric("Transferred Calls (over 60 seconds)", transferred_calls)
-    st.metric("Converted Calls (over 30 minutes)", converted_calls)
+    # Create three columns for metrics
+    col1, col2, col3 = st.columns(3)
+
+    # Display metrics in each column
+    col1.metric("Total Calls", total_calls)
+    col2.metric("Transferred Calls (over 60 seconds)", transferred_calls)
+    col3.metric("Converted Calls (over 30 minutes)", converted_calls)
+    
     st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
     
     # Display the updated DataFrame with hyperlinks
