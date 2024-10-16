@@ -36,7 +36,7 @@ def fetch_call_data(start_date, end_date, limit=1000):
         response = requests.get(url, headers=headers, params=querystring)
         if response.status_code == 200:
             data = response.json()
-            total_count = data.get('total_count', 0)
+            total_count = data.get('total_count', 0)  # Get the total_count from the API response
             all_call_data.extend(data.get('calls', []))
             next_from = data.get('next_from')
             if not next_from:
@@ -45,7 +45,7 @@ def fetch_call_data(start_date, end_date, limit=1000):
             st.error(f"Failed to fetch data. Status: {response.status_code}")
             break
 
-    return total_count, pd.DataFrame([{
+    df = pd.DataFrame([{
         "Inbound Number": call.get("from"),
         "Call Date": call.get("created_at", "").split("T")[0],
         "Call Duration (minutes)": call.get("call_length", 0),
@@ -54,6 +54,8 @@ def fetch_call_data(start_date, end_date, limit=1000):
         "Recording": f'<a href="{call.get("recording_url")}" target="_blank">Listen</a>'
                      if call.get("recording_url") else "No Recording"
     } for call in all_call_data])
+
+    return total_count, df  # Return the total_count from the API
 
 # Display the logo
 st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
