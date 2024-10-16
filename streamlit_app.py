@@ -16,7 +16,7 @@ def format_date_for_api(date, start=True):
 
 # Cache API data with a 10-second refresh
 @st.cache_data(ttl=10)
-def fetch_call_data(start_date, end_date, limit=1000):
+def fetch_call_data(start_date, end_date, limit=10000):
     url = "https://api.bland.ai/v1/calls"
     headers = {"authorization": "sk-s3zix6yia4ew2w9ymga9v0jexcx0j0crqu0kuvzwqqhg3hj7z9tteiuv6i3rls5u69"}
 
