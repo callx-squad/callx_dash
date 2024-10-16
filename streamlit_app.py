@@ -27,6 +27,9 @@ def fetch_call_data(start_date, end_date):
 
     all_call_data = []
     total_count = 0
+    total_cost = 0
+    transferred_calls = 0
+    converted_calls = 0
     from_index = 0
     to_index = 999  # Start with the first 1000 records
 
@@ -43,6 +46,14 @@ def fetch_call_data(start_date, end_date):
             data = response.json()
             total_count = data.get('total_count', 0)
             calls = data.get('calls', [])
+            
+            for call in calls:
+                total_cost += call.get("price", 0.0)
+                if call.get("transferred_to") is not None:
+                    transferred_calls += 1
+                if call.get("call_length", 0) > 30:
+                    converted_calls += 1
+            
             all_call_data.extend(calls)
             
             if len(calls) < 1000:  # Less than 1000 records returned, we've reached the end
@@ -64,12 +75,9 @@ def fetch_call_data(start_date, end_date):
                      if call.get("recording_url") else "No Recording"
     } for call in all_call_data])
 
-    return total_count, df
+    return total_count, df, total_cost, transferred_calls, converted_calls
 
-def process_data(df, total_count):
-    total_cost = df["Call Cost ($)"].sum()
-    transferred_calls = df[df["Transferred"]].shape[0]
-    converted_calls = df[df["Call Duration (minutes)"] > 30].shape[0]
+def process_data(total_count, total_cost, transferred_calls, converted_calls):
     transferred_pct = (transferred_calls / total_count) * 100 if total_count else 0
     converted_pct = (converted_calls / transferred_calls) * 100 if transferred_calls else 0
 
@@ -102,10 +110,10 @@ if option == "Today":
     while True:
         with data_placeholder.container():
             start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
-            total_count, df = fetch_call_data(start_date_str, end_date_str)
+            total_count, df, total_cost, transferred_calls, converted_calls = fetch_call_data(start_date_str, end_date_str)
 
             if not df.empty:
-                total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct = process_data(df, total_count)
+                total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct = process_data(total_count, total_cost, transferred_calls, converted_calls)
                 display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct)
 
                 with st.expander("Call Details"):
@@ -134,10 +142,10 @@ st.session_state['date_selection'] = option
 # For options other than "Today"
 if option != "Today":
     start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
-    total_count, df = fetch_call_data(start_date_str, end_date_str)
+    total_count, df, total_cost, transferred_calls, converted_calls = fetch_call_data(start_date_str, end_date_str)
 
     if not df.empty:
-        total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct = process_data(df, total_count)
+        total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct = process_data(total_count, total_cost, transferred_calls, converted_calls)
         display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct)
 
         with st.expander("Call Details"):
