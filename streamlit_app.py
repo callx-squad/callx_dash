@@ -202,7 +202,7 @@ st.markdown(
     @media (max-width: 768px) {
         .stButton button {
             position: absolute;
-            bottom: -200px;
+            bottom: -400px;
             left: 5px;
         }
     }
