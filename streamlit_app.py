@@ -96,7 +96,7 @@ def process_data(total_count, total_cost, transferred_calls, converted_calls):
     return total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit
 
 def display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, show_profit=False):
-    # Use custom CSS to adjust layout on mobile
+    # Use custom CSS to adjust layout and font sizes on mobile
     st.markdown("""
     <style>
     .metric-row {
@@ -108,9 +108,22 @@ def display_metrics(total_count, total_cost, transferred_calls, converted_calls,
         flex: 0 0 calc(50% - 10px);
         margin-bottom: 20px;
     }
+    .metric-label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .metric-value {
+        font-size: 24px;
+    }
     @media (max-width: 768px) {
         .metric-container {
             flex: 0 0 calc(50% - 5px);
+        }
+        .metric-label {
+            font-size: 12px;
+        }
+        .metric-value {
+            font-size: 16px;
         }
     }
     </style>
