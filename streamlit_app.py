@@ -119,7 +119,7 @@ main_content = st.empty()
 
 def style_dataframe(df):
     def make_clickable(val):
-        if val.startswith('<a href='):
+        if isinstance(val, str) and val.startswith('<a href='):
             return val
         return f'<div>{val}</div>'
     
@@ -144,7 +144,7 @@ if option == "Today":
 
                 with st.expander("Call Details"):
                     styled_df = style_dataframe(df)
-                    html_table = styled_df.to_html(escape=False, index=False)
+                    html_table = styled_df.render()
 
                     sortable_table = f"""
                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -202,7 +202,7 @@ if option != "Today":
 
             with st.expander("Call Details"):
                 styled_df = style_dataframe(df)
-                html_table = styled_df.to_html(escape=False, index=False)
+                html_table = styled_df.render()
 
                 sortable_table = f"""
                 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
