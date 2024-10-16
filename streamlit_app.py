@@ -42,6 +42,8 @@ def fetch_call_data(start_date, end_date):
 
     long_calls_sample = []  # To store a sample of calls over 30 minutes
 
+    call_samples = []  # To store a sample of calls for debugging
+
     while True:
         querystring = {
             "start_date": start_date,
@@ -62,6 +64,15 @@ def fetch_call_data(start_date, end_date):
                     transferred_calls += 1
                 call_length = call.get("call_length", 0)
                 
+                # Store a sample of calls for debugging
+                if len(call_samples) < 10:
+                    call_samples.append({
+                        "raw_length": call.get("call_length"),
+                        "processed_length": call_length,
+                        "transferred": call.get("transferred_to") is not None,
+                        "date": call.get("created_at")
+                    })
+                
                 if isinstance(call_length, (int, float)):
                     if call_length <= 15:
                         call_length_distribution['0-15'] += 1
@@ -70,13 +81,9 @@ def fetch_call_data(start_date, end_date):
                     elif 30 < call_length <= 60:
                         call_length_distribution['31-60'] += 1
                         converted_calls += 1
-                        if len(long_calls_sample) < 5:
-                            long_calls_sample.append(call)
                     else:
                         call_length_distribution['61+'] += 1
                         converted_calls += 1
-                        if len(long_calls_sample) < 5:
-                            long_calls_sample.append(call)
                 else:
                     st.write(f"Invalid call length: {call_length}, type: {type(call_length)}")
             
@@ -108,10 +115,9 @@ def fetch_call_data(start_date, end_date):
     st.write(f"Converted calls: {converted_calls}")
     st.write(f"Call length distribution: {call_length_distribution}")
     
-    if long_calls_sample:
-        st.write("Sample of calls over 30 minutes:")
-        for call in long_calls_sample:
-            st.write(f"Call length: {call.get('call_length')}, Date: {call.get('created_at')}")
+    st.write("Sample of calls:")
+    for sample in call_samples:
+        st.write(f"Raw length: {sample['raw_length']}, Processed length: {sample['processed_length']}, Transferred: {sample['transferred']}, Date: {sample['date']}")
 
     return total_count, df, total_cost, transferred_calls, converted_calls
 
