@@ -179,7 +179,15 @@ def main():
 
     if not st.session_state.logged_in:
         st.subheader("Login")
-        login()
+        username = st.text_input("Username")
+        password = st.text_input("Password", type='password')
+        if st.button("Login"):
+            if username == USERNAME and check_hashes(password, make_hashes(PASSWORD)):
+                st.session_state.logged_in = True
+                st.success("Logged In as {}".format(username))
+                st.rerun()
+            else:
+                st.error("Incorrect Username/Password")
     else:
         st.markdown("### Call Data")
 
@@ -341,6 +349,10 @@ def main():
                         create_paginated_table(formatted_df)
                 else:
                     st.write("No data available for the selected time period.")
+
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.rerun()
 
 # Initialize the app
 if __name__ == '__main__':
