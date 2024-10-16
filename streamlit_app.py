@@ -46,7 +46,7 @@ def fetch_call_data_paginated(start_date, end_date, limit=1000):
             "Inbound Number": call["from"],
             "Call Duration (minutes)": call["call_length"],
             "Call Cost ($)": call["price"],
-            "Recording URL": call["recording_url"]
+            "Recording URL": f"[Listen]({call['recording_url']})" if call['recording_url'] else "No Recording"
         } for call in all_call_data])
     else:
         return pd.DataFrame()
@@ -96,7 +96,7 @@ if not df.empty:
     st.metric("Total Calls", total_calls)
     st.metric("Total Call Cost ($)", f"${total_cost:.2f}")
     
-    # Display the updated DataFrame
-    st.dataframe(df)
+    # Display the updated DataFrame with hyperlinks
+    st.markdown(df.to_markdown(), unsafe_allow_html=True)
 else:
     st.write("No data available for the selected time period.")
