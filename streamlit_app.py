@@ -201,9 +201,9 @@ st.markdown(
     }
     @media (max-width: 768px) {
         .stButton button {
-            position: static;
-            margin-top: 20px;
-            margin-left: 5px;
+            position: absolute;
+            bottom: -200px;
+            left: 5px;
         }
     }
     </style>
