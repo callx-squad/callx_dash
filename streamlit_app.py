@@ -92,7 +92,7 @@ def fetch_call_data(start_date, end_date):
 def process_data(total_count, total_cost, transferred_calls, converted_calls):
     transferred_pct = (transferred_calls / total_count) * 100 if total_count else 0
     converted_pct = (converted_calls / transferred_calls) * 100 if transferred_calls else 0
-    call_profit = total_cost * 4.166666666666667
+    call_profit = (total_cost * 4.166666666666667) - total_cost
     return total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit
 
 def display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct, call_profit, show_profit=False):
