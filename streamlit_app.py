@@ -5,18 +5,11 @@ from datetime import datetime, timedelta
 import pytz
 import os
 
-# Try to load environment variables from .env file
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    st.warning("python-dotenv is not installed. Using os.environ for API key.")
-
-# Get the API key from environment variables or Streamlit secrets
-API_KEY = os.getenv("API_KEY") or st.secrets.get("API_KEY")
+# Get the API key from Streamlit secrets
+API_KEY = st.secrets["API_KEY"]
 
 if not API_KEY:
-    st.error("API_KEY is not set. Please set it in your .env file or Streamlit secrets.")
+    st.error("API_KEY is not set. Please set it in your Streamlit secrets.")
     st.stop()
 
 # Define EST timezone
