@@ -113,13 +113,14 @@ st.markdown("### Call Data")
 # Add date selection
 option = st.selectbox("Select a time period:", ["Today", "Yesterday", "Last 7 Days", "Last 30 Days", "Custom Date Range"])
 
+# Create a placeholder for the main content
+main_content = st.empty()
+
 if option == "Today":
     start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
     
-    data_placeholder = st.empty()
-    
     while True:
-        with data_placeholder.container():
+        with main_content.container():
             start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
             total_count, df, total_cost, transferred_calls, converted_calls = fetch_call_data(start_date_str, end_date_str)
 
@@ -152,14 +153,15 @@ st.session_state['date_selection'] = option
 
 # For options other than "Today"
 if option != "Today":
-    start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
-    total_count, df, total_cost, transferred_calls, converted_calls = fetch_call_data(start_date_str, end_date_str)
+    with main_content.container():
+        start_date_str, end_date_str = format_date_for_api(start_date, True), format_date_for_api(end_date, False)
+        total_count, df, total_cost, transferred_calls, converted_calls = fetch_call_data(start_date_str, end_date_str)
 
-    if not df.empty:
-        total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct = process_data(total_count, total_cost, transferred_calls, converted_calls)
-        display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct)
+        if not df.empty:
+            total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct = process_data(total_count, total_cost, transferred_calls, converted_calls)
+            display_metrics(total_count, total_cost, transferred_calls, converted_calls, transferred_pct, converted_pct)
 
-        with st.expander("Call Details"):
-            st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
-    else:
-        st.write("No data available for the selected time period.")
+            with st.expander("Call Details"):
+                st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
+        else:
+            st.write("No data available for the selected time period.")
