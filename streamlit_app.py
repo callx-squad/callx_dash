@@ -6,7 +6,6 @@ import pytz
 import os
 import time
 from streamlit.components.v1 import html
-from streamlit_icon_button import icon_button
 
 # Get the API key from Streamlit secrets
 API_KEY = st.secrets["API_KEY"]
@@ -193,7 +192,7 @@ st.markdown(
 if 'show_profit' not in st.session_state:
     st.session_state.show_profit = False
 
-if icon_button("🤖", "Toggle Profit", key="toggle_profit"):
+if st.button("🤖 Toggle Profit", key="toggle_profit"):
     st.session_state.show_profit = not st.session_state.show_profit
 
 # Update the "Today" section
