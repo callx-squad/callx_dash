@@ -47,7 +47,12 @@ def fetch_call_data(start_date, end_date):
             calls = data.get('calls', [])
             
             for call in calls:
-                total_cost += call.get("price", 0.0)
+                try:
+                    price = float(call.get("price", 0.0))
+                    total_cost += price
+                except (ValueError, TypeError):
+                    st.warning(f"Invalid price value: {call.get('price')}")
+                
                 if call.get("transferred_to") is not None:
                     transferred_calls += 1
             
@@ -65,7 +70,7 @@ def fetch_call_data(start_date, end_date):
     df = pd.DataFrame([{
         "Inbound Number": call.get("from"),
         "Call Date": call.get("created_at", "").split("T")[0],
-        "Call Cost ($)": call.get("price", 0.0),
+        "Call Cost ($)": float(call.get("price", 0.0)),
         "Transferred": call.get("transferred_to") is not None,
         "Recording": f'<a href="{call.get("recording_url")}" target="_blank">Listen</a>'
                      if call.get("recording_url") else "No Recording"
