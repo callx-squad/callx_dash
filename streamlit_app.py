@@ -77,56 +77,23 @@ def main():
         st.error("API_KEY is not set. Please set it in your Streamlit secrets.")
         st.stop()
 
-    # Display the logo and logout button
-    col1, col2 = st.columns([3, 1])
+    # Display the logo on the dashboard and add logout button
+    col1, col2, col3 = st.columns([2,2,1])
     with col1:
         st.image("https://cdn.prod.website-files.com/667c3ac275caf73d90d821aa/66f5f57cd6e1727fa47a1fad_call_xlogo.png", width=200)
-    with col2:
-        if st.button("Logout", key="logout_button", type="primary"):
+    with col3:
+        if st.button("Logout", key="logout_button"):
             st.session_state["password_correct"] = False
             st.rerun()
 
-    st.markdown("---")  # Add a horizontal line for visual separation
-
     st.markdown("### Call Data")
 
-    # Add date selection
-    option = st.selectbox("Select a time period:", ["Today", "Yesterday", "Last 7 Days", "Last 30 Days", "Custom Date Range"])
-
-    # Create a placeholder for the main content
-    main_content = st.empty()
-
-    # Check if the current user is user1
-    if st.session_state.get("current_user") == "user1":
-        if st.button("🤖", key="toggle_profit"):
-            st.session_state.show_profit = not st.session_state.show_profit
-
-    # Define start_date and end_date based on the selected option
-    today = datetime.now(pytz.timezone('US/Eastern')).date()
-    yesterday = today - timedelta(days=1)
-    last_7_days = today - timedelta(days=7)
-    last_30_days = today - timedelta(days=30)
-
-    if option == "Today":
-        start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=pytz.timezone('US/Eastern')), datetime.combine(today, datetime.max.time(), tzinfo=pytz.timezone('US/Eastern'))
-    elif option == "Yesterday":
-        start_date, end_date = datetime.combine(yesterday, datetime.min.time(), tzinfo=pytz.timezone('US/Eastern')), datetime.combine(yesterday, datetime.max.time(), tzinfo=pytz.timezone('US/Eastern'))
-    elif option == "Last 7 Days":
-        start_date, end_date = datetime.combine(last_7_days, datetime.min.time(), tzinfo=pytz.timezone('US/Eastern')), datetime.combine(today, datetime.max.time(), tzinfo=pytz.timezone('US/Eastern'))
-    elif option == "Last 30 Days":
-        start_date, end_date = datetime.combine(last_30_days, datetime.min.time(), tzinfo=pytz.timezone('US/Eastern')), datetime.combine(today, datetime.max.time(), tzinfo=pytz.timezone('US/Eastern'))
-    else:
-        start_date = st.date_input("Start date", last_30_days)
-        end_date = st.date_input("End date", today)
-        if start_date > end_date:
-            st.error("Start date must be before or equal to end date.")
-            st.stop()
-        start_date = datetime.combine(start_date, datetime.min.time(), tzinfo=pytz.timezone('US/Eastern'))
-        end_date = datetime.combine(end_date, datetime.max.time(), tzinfo=pytz.timezone('US/Eastern'))
+    # Define EST timezone
+    est = pytz.timezone('US/Eastern')
 
     def format_date_for_api(date, start=True):
         """Format dates to API-friendly format."""
-        return date.astimezone(pytz.timezone('US/Eastern')).strftime('%Y-%m-%dT00:00:01+00:00' if start else '%Y-%m-%dT23:59:59+00:00')
+        return date.astimezone(est).strftime('%Y-%m-%dT00:00:01+00:00' if start else '%Y-%m-%dT23:59:59+00:00')
 
     @st.cache_data(ttl=10)
     def fetch_call_data(start_date, end_date):
@@ -333,27 +300,27 @@ def main():
             st.session_state.show_profit = not st.session_state.show_profit
 
     # Define start_date and end_date based on the selected option
-    today = datetime.now(pytz.timezone('US/Eastern')).date()
+    today = datetime.now(est).date()
     yesterday = today - timedelta(days=1)
     last_7_days = today - timedelta(days=7)
     last_30_days = today - timedelta(days=30)
 
     if option == "Today":
-        start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=pytz.timezone('US/Eastern')), datetime.combine(today, datetime.max.time(), tzinfo=pytz.timezone('US/Eastern'))
+        start_date, end_date = datetime.combine(today, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
     elif option == "Yesterday":
-        start_date, end_date = datetime.combine(yesterday, datetime.min.time(), tzinfo=pytz.timezone('US/Eastern')), datetime.combine(yesterday, datetime.max.time(), tzinfo=pytz.timezone('US/Eastern'))
+        start_date, end_date = datetime.combine(yesterday, datetime.min.time(), tzinfo=est), datetime.combine(yesterday, datetime.max.time(), tzinfo=est)
     elif option == "Last 7 Days":
-        start_date, end_date = datetime.combine(last_7_days, datetime.min.time(), tzinfo=pytz.timezone('US/Eastern')), datetime.combine(today, datetime.max.time(), tzinfo=pytz.timezone('US/Eastern'))
+        start_date, end_date = datetime.combine(last_7_days, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
     elif option == "Last 30 Days":
-        start_date, end_date = datetime.combine(last_30_days, datetime.min.time(), tzinfo=pytz.timezone('US/Eastern')), datetime.combine(today, datetime.max.time(), tzinfo=pytz.timezone('US/Eastern'))
+        start_date, end_date = datetime.combine(last_30_days, datetime.min.time(), tzinfo=est), datetime.combine(today, datetime.max.time(), tzinfo=est)
     else:
         start_date = st.date_input("Start date", last_30_days)
         end_date = st.date_input("End date", today)
         if start_date > end_date:
             st.error("Start date must be before or equal to end date.")
             st.stop()
-        start_date = datetime.combine(start_date, datetime.min.time(), tzinfo=pytz.timezone('US/Eastern'))
-        end_date = datetime.combine(end_date, datetime.max.time(), tzinfo=pytz.timezone('US/Eastern'))
+        start_date = datetime.combine(start_date, datetime.min.time(), tzinfo=est)
+        end_date = datetime.combine(end_date, datetime.max.time(), tzinfo=est)
 
     # Update the "Today" section
     if option == "Today":
